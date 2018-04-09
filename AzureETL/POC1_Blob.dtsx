@@ -11,8 +11,8 @@
   DTS:LocaleID="1033"
   DTS:ObjectName="POC1_Blob"
   DTS:PackageType="5"
-  DTS:VersionBuild="8"
-  DTS:VersionGUID="{DE7F6AB2-B0CE-43D6-923E-433513C130FE}">
+  DTS:VersionBuild="9"
+  DTS:VersionGUID="{C444EDC4-65C1-48F7-90B6-386C4CE250C1}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -26,7 +26,7 @@
           ConnectionString="DefaultEndpointsProtocol=https;AccountName=d365demo02;EndpointSuffix=core.windows.net">
           <AccountKey
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAWaQhcf+wzkm8KOXqzltTOwAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAABNbMeAncZ4DHAjIezPy39mAAAAAASAAACgAAAAEAAAABmTyePSDjOuwq5/NODVYBC4AAAAvj+694jKmt6TWAHUzBh7+RLV72eLQ6jLIFqrDL77xp6EirsJm5ClmBMy2FxK7UfGewjSIkoDyiZUXvEVDxrrKlNCbpnEcoOSfYYp/8QYDVaVDtzcZ2GTleGdco3H3wRmtD6lr2YbI4VaBs7bYPUoQy3OQAcxs2oJl8FRn4b0iqNJGUqT6RF52rPwZtXh3/KR69xEXQ/wDc16NT2ducqRxJeLhSaqSzFiWik4GED8+ySgy5xcpMc8qxQAAABQb74AXDy50P8ifqVCJvgYvq0TLw</AccountKey>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAWaQhcf+wzkm8KOXqzltTOwAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAARgVOvNQH1Wr9J00bW55UvAAAAAASAAACgAAAAEAAAAD7HMe85j5BdP80pyYRA0bq4AAAAeMUD5o/Z5TghtG+Z8QzhuoxufNmrwK1RGadG46+xI6OKJHPBMWNJ5jl5Zit0LCo/dubhFJY3YS1Cj9O0ofLhIlnU75zV1cbmGCI1w1xCBUSOaggFOPM35S0L88ecp39oA4gNvdp7MI15i1Cyo00D4JtW0xRFTf9rtxc4Yo2YdrnTCpInAJt5Ty6S0/9zgqitWkfAvFoWXWpT51TeId1U4vOHo4DPJTAT+bwDqGowJ/cJPd8ztcOp2hQAAAAtAFE8Whj81SoI/S1G1YXWEuqd8A</AccountKey>
         </AzureStorageConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -88,6 +88,7 @@
     <DTS:Executable
       DTS:refId="Package\Azure Data Flow Task"
       DTS:CreationName="Microsoft.Pipeline"
+      DTS:DelayValidation="True"
       DTS:Description="Data Flow Task"
       DTS:DTSID="{730DD005-375F-425F-902D-3E89CCBD61BB}"
       DTS:ExecutableType="Microsoft.Pipeline"
