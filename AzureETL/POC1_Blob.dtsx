@@ -1,0 +1,493 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="3/5/2018 11:38:03 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="L04979RICARDOGU"
+  DTS:CreatorName="USCORP\RicardoGu"
+  DTS:DTSID="{D641D288-C71B-45BC-BB10-4D020989806D}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="14.0.3002.92"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="POC1_Blob"
+  DTS:PackageType="5"
+  DTS:VersionBuild="8"
+  DTS:VersionGUID="{DE7F6AB2-B0CE-43D6-923E-433513C130FE}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[d365demo02]"
+      DTS:CreationName="AzureStorage"
+      DTS:DTSID="{06ACA965-25DB-41F8-AD7F-6BB88188FDD7}"
+      DTS:ObjectName="d365demo02">
+      <DTS:ObjectData>
+        <AzureStorageConnectionManager
+          ConnectionString="DefaultEndpointsProtocol=https;AccountName=d365demo02;EndpointSuffix=core.windows.net">
+          <AccountKey
+            Sensitive="1"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAWaQhcf+wzkm8KOXqzltTOwAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAABNbMeAncZ4DHAjIezPy39mAAAAAASAAACgAAAAEAAAABmTyePSDjOuwq5/NODVYBC4AAAAvj+694jKmt6TWAHUzBh7+RLV72eLQ6jLIFqrDL77xp6EirsJm5ClmBMy2FxK7UfGewjSIkoDyiZUXvEVDxrrKlNCbpnEcoOSfYYp/8QYDVaVDtzcZ2GTleGdco3H3wRmtD6lr2YbI4VaBs7bYPUoQy3OQAcxs2oJl8FRn4b0iqNJGUqT6RF52rPwZtXh3/KR69xEXQ/wDc16NT2ducqRxJeLhSaqSzFiWik4GED8+ySgy5xcpMc8qxQAAABQb74AXDy50P8ifqVCJvgYvq0TLw</AccountKey>
+        </AzureStorageConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[localhost.ScratchDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{17985413-DB40-46BD-A75B-9F17510DA3C4}"
+      DTS:ObjectName="localhost.ScratchDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=localhost;Initial Catalog=ScratchDB;Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Azure Blob Download Task"
+      DTS:CreationName="CopyFromBlobTask"
+      DTS:Description="Azure Blob Download Task"
+      DTS:DTSID="{CE86F9B5-09D0-4888-979C-7C2B6B1B52E2}"
+      DTS:ExecutableType="CopyFromBlobTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Azure Blob Download Task"
+      DTS:TaskContact="Azure Blob Download Task; (C) Microsoft Corporation; All Rights Reserved"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <CopyFromBlobTask
+          ConnectionId="{06ACA965-25DB-41F8-AD7F-6BB88188FDD7}"
+          BlobContainer="export01"
+          LocalDirectory="C:\Users\ricardogu\Desktop\Personal\Projects\Dynamics_Research\Scratch\processed"
+          FileNameFilter="*"
+          TimeRangeFrom="1/1/1900 12:00:00 AM -04:00"
+          TimeRangeTo="12/31/2200 12:00:00 AM -04:00" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Azure Blob Upload Task"
+      DTS:CreationName="CopyToBlobTask"
+      DTS:Description="Azure Blob Upload Task"
+      DTS:DTSID="{414902EE-2C54-47C9-B487-D07953419CA8}"
+      DTS:ExecutableType="CopyToBlobTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Azure Blob Upload Task"
+      DTS:TaskContact="Azure Blob Upload Task; (C) Microsoft Corporation; All Rights Reserved"
+      DTS:ThreadHint="1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <CopyToBlobTask
+          ConnectionId="{06ACA965-25DB-41F8-AD7F-6BB88188FDD7}"
+          BlobContainer="export01"
+          LocalDirectory="C:\Users\ricardogu\Desktop\Personal\Projects\Dynamics_Research\Scratch\src"
+          FileNameFilter="*.csv"
+          TimeRangeFrom="1/1/1900 12:00:00 AM -04:00"
+          TimeRangeTo="12/31/2200 12:00:00 AM -04:00" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Azure Data Flow Task"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{730DD005-375F-425F-902D-3E89CCBD61BB}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Azure Data Flow Task"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Azure Data Flow Task\Azure Blob Source"
+              componentClassID="Microsoft.ManagedComponentHost"
+              contactInfo="© Microsoft Corporation; All Rights Reserved;"
+              description="Extracts data from a blob in Azure Storage. The supported file formats are: Text and Avro."
+              name="Azure Blob Source"
+              usesDispositions="true"
+              validateExternalMetadata="False">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The name of blob container"
+                  expressionType="Notify"
+                  name="Blob Container">export01</property>
+                <property
+                  dataType="System.String"
+                  description="The full name of blob"
+                  expressionType="Notify"
+                  name="Blob Name">data01.csv</property>
+                <property
+                  dataType="System.Int32"
+                  description="The format of blob file"
+                  name="Blob Format"
+                  typeConverter="Microsoft.SqlServer.IntegrationService.CloudComponents.Utilities.AzBlobFormatEnumStringConverter">0</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Compress File"
+                  name="Compress File">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="The compression type"
+                  name="Compression Type"
+                  typeConverter="Microsoft.SqlServer.IntegrationService.CloudComponents.Utilities.AzCompressionTypeEnumStringConverter">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="The compression level"
+                  name="Compression Level"
+                  typeConverter="Microsoft.SqlServer.IntegrationService.CloudComponents.Utilities.AzCompressionLevelEnumStringConverter">0</property>
+                <property
+                  dataType="System.String"
+                  description="The character used to delimit columns in text file"
+                  name="Column Delimiter">,</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Column names in the first data row"
+                  name="First Row as Column Names">true</property>
+                <property
+                  dataType="System.String"
+                  name="UserComponentTypeName">AzBlobSrc</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Azure Data Flow Task\Azure Blob Source.Connections[Azure Storage]"
+                  connectionManagerID="Package.ConnectionManagers[d365demo02]"
+                  connectionManagerRefId="Package.ConnectionManagers[d365demo02]"
+                  description="Connection Manager for Azure Storage"
+                  name="Azure Storage" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output]"
+                  name="Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[ID]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[ID]"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[ID]"
+                      name="ID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[SVAL]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[SVAL]"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[SVAL]"
+                      name="SVAL"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[NVAL]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[NVAL]"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[NVAL]"
+                      name="NVAL"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[ID]"
+                      dataType="wstr"
+                      length="255"
+                      name="ID" />
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[SVAL]"
+                      dataType="wstr"
+                      length="255"
+                      name="SVAL" />
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].ExternalColumns[NVAL]"
+                      dataType="wstr"
+                      length="255"
+                      name="NVAL" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output]"
+                  isErrorOut="true"
+                  name="Error output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ID]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[ID]"
+                      name="ID" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[SVAL]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[SVAL]"
+                      name="SVAL" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[NVAL]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Error output].Columns[NVAL]"
+                      name="NVAL" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Azure Data Flow Task\OLE DB Destination"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="OLE DB Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[Azure01]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Azure Data Flow Task\OLE DB Destination.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[localhost.ScratchDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[localhost.ScratchDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[ID]"
+                      cachedDataType="wstr"
+                      cachedLength="255"
+                      cachedName="ID"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ID]"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[ID]" />
+                    <inputColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[SVAL]"
+                      cachedDataType="wstr"
+                      cachedLength="255"
+                      cachedName="SVAL"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[SVAL]"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[SVAL]" />
+                    <inputColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].Columns[NVAL]"
+                      cachedDataType="wstr"
+                      cachedLength="255"
+                      cachedName="NVAL"
+                      externalMetadataColumnId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[NVAL]"
+                      lineageId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output].Columns[NVAL]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[ID]"
+                      dataType="wstr"
+                      length="255"
+                      name="ID" />
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[SVAL]"
+                      dataType="wstr"
+                      length="255"
+                      name="SVAL" />
+                    <externalMetadataColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input].ExternalColumns[NVAL]"
+                      dataType="wstr"
+                      length="255"
+                      name="NVAL" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Azure Data Flow Task\OLE DB Destination.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Azure Data Flow Task\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Azure Data Flow Task\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Azure Data Flow Task\OLE DB Destination.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Azure Data Flow Task.Paths[Output]"
+              endId="Package\Azure Data Flow Task\OLE DB Destination.Inputs[OLE DB Destination Input]"
+              name="Output"
+              startId="Package\Azure Data Flow Task\Azure Blob Source.Outputs[Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <NodeLayout
+          Size="211,42"
+          Id="Package\Azure Blob Download Task"
+          TopLeft="56,77" />
+        <NodeLayout
+          Size="197,42"
+          Id="Package\Azure Blob Upload Task"
+          TopLeft="374.5,77" />
+        <NodeLayout
+          Size="155,42"
+          Id="Package\Azure Data Flow Task"
+          TopLeft="679,77" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Azure Data Flow Task">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="177,42"
+          Id="Package\Azure Data Flow Task\OLE DB Destination"
+          TopLeft="100,174" />
+        <NodeLayout
+          Size="171,42"
+          Id="Package\Azure Data Flow Task\Azure Blob Source"
+          TopLeft="102,38" />
+        <EdgeLayout
+          Id="Package\Azure Data Flow Task.Paths[Output]"
+          TopLeft="188,80">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,94"
+              Start="0,0"
+              End="0,86.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,86.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Azure Data Flow Task\Azure Blob Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Azure Data Flow Task\OLE DB Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
