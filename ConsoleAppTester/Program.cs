@@ -5,22 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ConsoleAppTester.AzureUtility;
+using ConsoleAppTester.RESTUtility;
 using UtilitiesPOC;
 
 using System.Configuration;
-
-// Ex1
-using System.Net.Http;
-using System.Net.Http.Headers;
-using Newtonsoft.Json;
-
-// Ex2
-using System.Net;
-using System.IO;
-
-// Ex3
-using System.Collections.Specialized;
-
 
 namespace ConsoleAppTester
 {
@@ -32,202 +20,32 @@ namespace ConsoleAppTester
         public static void Main(string[] args)
         {
             // Read/Write to Azure Queue.
-            /*
-            AzQueue azq = new AzQueue(cnxn);
-
-            azq.CreateQueueMessages().Wait();
-            azq.ReadQueueMessages();
-            */
+            //AzQueue azq = new AzQueue(cnxn);
+            //azq.CreateQueueMessages().Wait();
+            //azq.ReadQueueMessages();
 
             // Read/Write to Azure Blob.
-            /*
-            AzBlob azb = new AzBlob(cnxn);
-
-            azb.CreateBlob().Wait();
-
-            Console.WriteLine($"FROM CLOUD: {azb.ReadBlob().Result}");
-            */
+            //AzBlob azb = new AzBlob(cnxn);
+            //azb.CreateBlob().Wait();
+            //Console.WriteLine($"FROM CLOUD: {azb.ReadBlob().Result}");
 
             // Ex 1: Out of the box HttpClient.
-            Ex1_HttpClient();
+            //var nn = new NativeNet();
+            //nn.Ex1_HttpClient();
 
             // Ex 2: Out of the box HttpWebRequest.
-            //Ex2_WebRequestGET();
-            //Ex2_WebRequestPOST();
+            //nn.Ex2_WebRequestGET();
+            //nn.Ex2_WebRequestPOST();
 
             // Ex 3: Out of the box WebClient.
-            //Ex3_WebClientGET().Wait();
+            //nn.Ex3_WebClientGET().Wait();
+
+            var t3 = new ThirdParty();
+
+            Console.WriteLine($"RESTSHARP: {t3.Ex1_RestSharpGET()}");
+            Console.WriteLine($"Async RESTSHARP: {t3.Ex1_RestSharpGETAsync().Result}");
 
             Console.ReadLine();
-        }
-
-        /************************************************************************************
-         * Ex1: HttpClient
-         * The "new kid on the block" offers modern .NET functionalities that older libraries 
-         * lack.
-         * 
-         * https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpclient?view=netframework-4.7.1
-         * TODO: POST
-         * TODO: Optimize: https://ankitvijay.net/2016/09/25/dispose-httpclient-or-have-a-static-instance/
-         * TODO: Use IHttpFilter for Oauth/Oauth2
-         ***********************************************************************************/
-
-        private async static void Ex1_HttpClient()
-        {
-            string baseURI = "https://funappdemo01.azurewebsites.net/api/VSRequestSecure";
-            string paramsURI = $"?code={code}&name=Ricardo%20Guzman";
-
-            // Disposable
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(baseURI);
-
-                HttpRequestHeaders headers = client.DefaultRequestHeaders;
-                headers.Add("user-agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-                headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-                HttpResponseMessage response = await client.GetAsync(paramsURI);  // blocks
-
-                if (response.IsSuccessStatusCode)
-                {
-                    string data = await response.Content.ReadAsStringAsync(); // blocks
-                    TypedQueueMessage m1 = JsonConvert.DeserializeObject<TypedQueueMessage>(data);
-
-                    Console.WriteLine($"EX1: {m1.ToString()}");
-                }
-                else
-                {
-                    Console.WriteLine($"{response.StatusCode} ({response.ReasonPhrase})");
-                }
-            }
-        }
-
-        private static void Ex1_HttpClientPOST()
-        {
-
-        }
-
-        /************************************************************************************
-         * Ex2: HttpWebRequest/HttpWebResponse
-         * HTTP-specific implementation of WebRequest class which was originally used to deal 
-         * with HTTP requests, but it was made obsolete and replaced by the WebClient class.
-         * 
-         * https://docs.microsoft.com/en-us/dotnet/api/system.net.httpwebrequest?view=netframework-4.7.1
-         * TODO: Async
-         * TODO: Implement conditional GET for web caching
-         ************************************************************************************/
-
-        private static void Ex2_WebRequestGET()
-        {
-            string baseURI = $"https://funappdemo01.azurewebsites.net/api/VSRequestSecure?code={code}&name=Ricardo%20Guzman%20Jr2";
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseURI);
-            request.Method = "GET"; // GET is default verb
-
-            try
-            {
-                var webResponse = (HttpWebResponse)request.GetResponse();
-
-                if (webResponse.StatusCode == HttpStatusCode.OK)
-                {
-                    using (Stream webStream = webResponse.GetResponseStream())
-                    {
-                        using (StreamReader responseReader = new StreamReader(webStream))
-                        {
-                            string response = responseReader.ReadToEnd();
-
-                            TypedQueueMessage m1 = JsonConvert.DeserializeObject<TypedQueueMessage>(response);
-
-                            Console.WriteLine(m1);
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"{webResponse.StatusCode}: {webResponse.StatusDescription}");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        private static void Ex2_WebRequestPOST()
-        {
-            string baseURI = $"https://funappdemo01.azurewebsites.net/api/VSRequestSecure?code={code}";
-            string body = "{\"name\":\"Ricardo Guzman Jr.\"}";
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseURI);
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.ContentLength = body.Length;
-
-            using (Stream webStream = request.GetRequestStream())
-            {
-                using (StreamWriter requestWriter = new StreamWriter(webStream, Encoding.ASCII))
-                {
-                    requestWriter.Write(body);
-                }
-            }
-
-            try
-            {
-                var webResponse = (HttpWebResponse)request.GetResponse();
-
-                if (webResponse.StatusCode == HttpStatusCode.OK)
-                {
-
-                    using (Stream webStream = webResponse.GetResponseStream())
-                    {
-                        using (StreamReader responseReader = new StreamReader(webStream))
-                        {
-                            string response = responseReader.ReadToEnd();
-
-                            TypedQueueMessage m1 = JsonConvert.DeserializeObject<TypedQueueMessage>(response);
-
-                            Console.WriteLine(m1);
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"{webResponse.StatusCode}: {webResponse.StatusDescription}");
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        /************************************************************************************
-         * Ex3: WebClient
-         * Wrapper around HttpWebRequest. If you want to write less code, not worry about all 
-         * the details, and the execution speed is a non-factor, consider using WebClient class.
-         * 
-         * https://docs.microsoft.com/en-us/dotnet/api/system.net.webclient?view=netframework-4.7.1
-         * 
-         * TODO: POST
-         ***********************************************************************************/
-        private async static Task<string> Ex3_WebClientGET()
-        {
-            string baseURI = "https://funappdemo01.azurewebsites.net/api/VSRequestSecure";
-
-            var client = new WebClient();
-            client.BaseAddress = baseURI;
-            client.QueryString = new NameValueCollection()
-            {
-                { "code", $"{code}" }
-                , { "name", "Ricardo%20Guzman2" }
-            };
-            client.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
-            client.Headers.Add("Content-Type", "application/json");
-
-            string response = await client.DownloadStringTaskAsync(baseURI);
-
-            Console.WriteLine($"EX3: {JsonConvert.DeserializeObject<TypedQueueMessage>(response)}");
-            return response;
         }
     }
 }
