@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppTester", "Console
 EndProject
 Project("{159641D6-6404-4A2A-AE62-294DE0FE8301}") = "AzureETL", "AzureETL\AzureETL.dtproj", "{99CE09C8-B99C-46B6-9A5C-7469B243A112}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureOAuthClient", "AzureOAuthClient\AzureOAuthClient.csproj", "{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,12 @@ Global
 		{99CE09C8-B99C-46B6-9A5C-7469B243A112}.Development|Any CPU.Build.0 = Development
 		{99CE09C8-B99C-46B6-9A5C-7469B243A112}.Release|Any CPU.ActiveCfg = Development
 		{99CE09C8-B99C-46B6-9A5C-7469B243A112}.Release|Any CPU.Build.0 = Development
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1986CC6-5B62-44F2-90A8-1B11E4539FB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
