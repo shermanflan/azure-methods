@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DEBUG
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +11,9 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Diagnostics;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AzureOAuthClient.D365.Security.Oauth2
@@ -25,11 +30,22 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      *      c. Required Permissions > Microsoft Graph > Delegated > Read Directory Data
      * 3. Add tenant id, client id, resource id, etc as configurable parameters.
      * 
-     * This is an example of an acquire token using the Select Account option. In this case,
-     * the user will be prompted to choose an Azure account each time.
+     * This is an example of an acquire token using the Auto option. In this case,
+     * the user will be prompted to choose an Azure account iff a token does not
+     * already exist. To delete an Azure "native" application, set the
+     * "availableToOtherTenants" property to false in the manifest. Then delete.
      * 
+     * Also uses Newtonsoft.Json.
+     * 
+     * TODO:
+     * 
+     * 1. See NativeClient-DotNet for a token cache implementation.
+     *      a. https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-devquickstarts-dotnet
+     * 2. See here for acquire token silently pattern:
+     *      a. https://github.com/AzureAD/azure-activedirectory-library-for-dotnet/wiki/AcquireTokenSilentAsync-using-a-cached-token
+     * 2. Does the Auto option get silently called when the user is in an SSO context?
      */
-    public class NativeGraphAPI
+    public class NativeAutoGraphAPI
     {
         private static AuthenticationContext authContext = null;
         public string Authority { get; set; }
@@ -40,9 +56,12 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         public string GraphApiVersion { get; set; }
         public string GraphApiEndpoint { get; set; }
 
-        public NativeGraphAPI(string authority, string tenant, string client, string redirect, string resource
+        public NativeAutoGraphAPI(string authority, string tenant, string client, string redirect, string resource
                                 , string apiVersion, string apiEndpoint)
         {
+            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            Debug.AutoFlush = true;
+
             Authority = authority;
             Tenant = tenant;
             ClientId = client;
@@ -63,23 +82,61 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         // TODO: Refactor to Oauth2 class.
         public async Task<AuthenticationResult> AcquireToken(string resource, string client, string redirectURL)
         {
+            // As the application starts, try to get an access token from cache without prompting the user.
             AuthenticationResult result = null;
             try
             {
-                // 
+                result = await authContext.AcquireTokenSilentAsync(
+                                                resource, 
+                                                client, 
+                                                // Hint to use a specific account
+                                                new UserIdentifier("rrguzman1976@hotmail.com", UserIdentifierType.OptionalDisplayableId)
+                                            );
+
+                Debug.WriteLine("Acquired token silenty.");
+                return result;
+            }
+            catch (AdalException ex)
+            {
+                if (ex.ErrorCode != AdalError.FailedToAcquireTokenSilently
+                    && ex.ErrorCode != AdalError.InteractionRequired)
+                {
+                    throw ex;
+                }
+            }
+
+            // If one does not exist, prompt for access.
+            try
+            {
+                // PromptBehavior.Auto will attempt to return a token without asking the user for credentials.
+                // PromptBehavior.Never will tell ADAL that the user should not be prompted for sign in, 
+                // and ADAL should instead throw an exception if it is unable to return a token.
+                // TODO: Under SSO (ricardo_guzman@ulti), does the challenge prompt still popup with hint?
                 result = await authContext.AcquireTokenAsync(
                                                 resource,
                                                 client,
                                                 new Uri(redirectURL),
-                                                new PlatformParameters(PromptBehavior.SelectAccount) // Always | Auto | Never
+                                                new PlatformParameters(PromptBehavior.Auto), // Auto | Always | SelectAccount | Never
+                                                                                             // Hint to use a specific account
+                                                new UserIdentifier("rrguzman1976@hotmail.com", UserIdentifierType.OptionalDisplayableId)
+                                                //new UserIdentifier("ricardo_guzman@ultimatesoftware.com", UserIdentifierType.OptionalDisplayableId)
                                             );
+
+                Debug.WriteLine("Acquired token auto.");
             }
-            catch (AdalException ex)
+            catch (AdalException ex) // unable to return a token
             {
-                Console.WriteLine($"AcquireToken: {ex.Message}");
+                Debug.WriteLine($"AcquireToken: {ex.Message}");
+                throw ex;
             }
 
             return result;
+        }
+
+        public void SignOut()
+        {
+            // Clear the token cache
+            authContext.TokenCache.Clear();
         }
 
         // Invoke API
@@ -89,7 +146,6 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             AuthenticationResult result = AcquireToken(GraphResourceId, ClientId, RedirectUri).Result;
 
             // Once we have an access_token, invoke API.
-            //string searchText = "rrguzman1976";
             string graphRequest = String.Format(CultureInfo.InvariantCulture
                                     , "{0}{1}/users?$filter=startswith(userPrincipalName, '{2}')"
                                     , GraphApiEndpoint, Tenant, prefix);
@@ -115,8 +171,7 @@ namespace AzureOAuthClient.D365.Security.Oauth2
                 throw new Exception((string)jResult["odata.error"]["message"]["value"]);
             }
 
-            string user = jResult["value"].ToString();
-            return user;
+            return jResult["value"].First["surname"] + ", " + jResult["value"].First["givenName"];
         }
 
         public string WhoAmI()
