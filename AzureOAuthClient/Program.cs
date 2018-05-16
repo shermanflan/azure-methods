@@ -26,6 +26,12 @@ namespace AzureOAuthClient
         private static string TodoListResourceId = ConfigurationManager.AppSettings["app2:TodoListResourceId"]; // target API
         private static string TodoListApiEndpoint = ConfigurationManager.AppSettings["app2:TodoListBaseAddress"];
 
+        private static string clientid3 = ConfigurationManager.AppSettings["app3:ClientId"];
+        private static string certName = ConfigurationManager.AppSettings["app3:CertName"];
+        private static string App3APIResourceId = ConfigurationManager.AppSettings["app3:APIResourceId"]; // target API
+        private static string App3APIVersion = ConfigurationManager.AppSettings["app3:APIVersion"]; // target API
+        private static string App3ApiEndpoint = ConfigurationManager.AppSettings["app3:APIBaseAddress"];
+
         public static void Main(string[] args)
         {
             string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);
@@ -37,17 +43,20 @@ namespace AzureOAuthClient
                 //Console.WriteLine($"WhoAmI: {api.WhoAmI()}");
                 //api.SignOut();
 
-                DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey
-                                                            , TodoListResourceId, TodoListApiEndpoint);
+                //DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, TodoListResourceId, TodoListApiEndpoint);
+                //api2.PostTodo();
+                //Console.WriteLine($"GetUser: {api2.GetUser("rrguzman1976")}");
 
-                api2.PostTodo();
-                Console.WriteLine($"GetUser: {api2.GetUser("rrguzman1976")}");
-                //Console.WriteLine($"WhoAmI: {api2.WhoAmI()}");
+                DaemonCertGraphAPI api3 = new DaemonCertGraphAPI(authority, tenant, clientid3, certName, App3APIResourceId, App3APIVersion, App3ApiEndpoint);
+                api3.PostData().Wait();
+                Console.WriteLine($"Response:");
+                Console.WriteLine($"{api3.GetData().Result}");
+                //Console.WriteLine($"{api3.GetUser("rrguzman1976").Result}");
 
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.Message}");
+                Console.WriteLine($"{e.ToString()}");
             }
             Console.ReadLine();
         }

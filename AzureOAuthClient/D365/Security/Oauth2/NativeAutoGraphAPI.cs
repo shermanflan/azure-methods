@@ -80,6 +80,7 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         }
 
         // TODO: Refactor to Oauth2 class.
+        // TODO: Add retry logic.
         public async Task<AuthenticationResult> AcquireToken(string resource, string client, string redirectURL)
         {
             // As the application starts, try to get an access token from cache without prompting the user.

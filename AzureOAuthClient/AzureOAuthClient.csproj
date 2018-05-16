@@ -52,6 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="D365\Poco\TodoItem.cs" />
+    <Compile Include="D365\Security\Oauth2\DaemonCertGraphAPI.cs" />
     <Compile Include="D365\Security\Oauth2\DaemonKeyGraphAPI.cs" />
     <Compile Include="D365\Security\Oauth2\NativeAutoGraphAPI.cs" />
     <Compile Include="Program.cs" />
