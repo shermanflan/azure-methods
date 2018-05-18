@@ -25,8 +25,12 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      * Based on:
      *  1. https://github.com/Azure-Samples/active-directory-dotnet-daemon-certificate-credential
      * 
-     * Cannot get this to work against a public API (Graph API). "Forbidden"
-     * is returned. 
+     * Successful API calls to AD Graph require the following minimum permissions:
+     *  1. Microsoft Graph: Application/Read directory data
+     *  2. Microsoft Graph: Delegated/Read directory data
+     *  3. Windows Azure Active Directory: Application/Read directory data
+     *  4. Windows Azure Active Directory: Delegated/Sign in and read user profile
+     * Finally, explict permissions need to be granted (Settings > Required Permissions > Grant Permissions
      */
     public class DaemonCertGraphAPI
     {
@@ -139,113 +143,50 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         }
 
         // Invoke API
-        public async Task PostData()
-        {
-            // Get an access token from Azure AD using client credentials.
-            // If the attempt to get a token fails because the server is unavailable, retry twice after 3 seconds each.
-            AuthenticationResult result = await AcquireToken();
-
-            // Post an item to the service.
-
-            // Add the access token to the authorization header of the request.
-            HttpClient httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-
-            // Forms encode data and POST to the web api.
-            string timeNow = DateTime.Now.ToString();
-            Console.WriteLine("Posting to To Do list at {0}", timeNow);
-            string todoText = "RKO Task at time: " + timeNow;
-            HttpContent content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("Title", todoText) });
-            HttpResponseMessage response = await httpClient.PostAsync(APIEndpoint + "/api/todolist", content);
-
-            if (response.IsSuccessStatusCode == true)
-            {
-                Console.WriteLine("Successfully posted new To Do item:  {0}\n", todoText);
-            }
-            else
-            {
-                Console.WriteLine("Failed to post a new To Do item\nError:  {0}\n", response.ReasonPhrase);
-            }
-        }
-
-        public async Task<string> GetData()
-        {
-            // Get an Access Token for the API
-            AuthenticationResult result = await AcquireToken();
-
-            // Once we have an access_token, invoke API.
-            HttpClient httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-            HttpResponseMessage response = await httpClient.GetAsync(APIEndpoint + "/api/todolist");
-
-            StringBuilder data = new StringBuilder();
-            if (response.IsSuccessStatusCode)
-            {
-                // Read the response and output it to the console.
-                var content = await response.Content.ReadAsStringAsync();
-
-                try
-                {
-                    var inputJson = JsonConvert.DeserializeObject<List<TodoItem>>(content);
-
-                    foreach (var t in inputJson)
-                    {
-                        data.AppendLine(t.ToString());
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                    throw;
-                }
-            }
-            else
-            {
-                Console.WriteLine("Failed to retrieve To Do list\nError:  {0}\n", response.ReasonPhrase);
-            }
-
-            return data.ToString();
-        }
-
-        // Invoke API
-        // TODO: Returns "Forbidden"
         public async Task<string> GetUser(string prefix)
         {
             // Get an Access Token for the Graph API
             AuthenticationResult result = await AcquireToken();
 
             // Once we have an access_token, invoke API.
-            string graphRequest = String.Format(CultureInfo.InvariantCulture
-                                    , "{0}{1}/users?$filter=startswith(userPrincipalName, '{2}')"
-                                    , APIEndpoint, Tenant, prefix);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, graphRequest);
+            HttpClient httpClient = new HttpClient();
 
             // Oauth2 Access Token
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-
-            HttpClient httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
             httpClient.DefaultRequestHeaders.Add("api-version", APIVersion);
-            HttpResponseMessage response = await httpClient.SendAsync(request);
 
-            if (!response.IsSuccessStatusCode)
+            string graphRequest = String.Format(CultureInfo.InvariantCulture
+                                    , "{0}{1}/users?$filter=startswith(displayName, '{2}')"
+                                    , APIEndpoint, Tenant, prefix);
+
+            HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
+
+            if (response.IsSuccessStatusCode)
             {
-                throw new WebException(response.StatusCode.ToString() + ": " + response.ReasonPhrase);
+                // Read the response and output it to the console.
+                string content = await response.Content.ReadAsStringAsync();
+
+                try
+                {
+                    // TODO: Use canonical JSON deserialization methods.
+                    dynamic inputJson = JsonConvert.DeserializeObject(content);
+                    var sequence = inputJson["value"];
+                    var user1 = sequence[0];
+
+                    return String.Format($"Display Name: {user1["displayName"]}\nMobile: {user1["mobile"]}" +
+                                        $"\nUPN: {user1["userPrincipalName"]}\nEmail: {user1["otherMails"][0]}");
+
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.ToString());
+                    throw;
+                }
             }
-
-            string content = await response.Content.ReadAsStringAsync();
-            string val01 = null;
-
-            try
+            else
             {
-                var inputJson = JsonConvert.DeserializeObject<dynamic>(content);
+                throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                throw;
-            }
-
-            return val01;
         }
 
     }
