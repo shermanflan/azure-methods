@@ -124,7 +124,9 @@ namespace AzureOAuthClient.D365.Security.Oauth2
                 }
                 catch (AdalException ex)
                 {
-                    if (ex.ErrorCode == "temporarily_unavailable")
+                    if (ex.ErrorCode == "temporarily_unavailable"
+                        || ex.ErrorCode == AdalError.NetworkNotAvailable
+                        || ex.ErrorCode == AdalError.ServiceUnavailable)
                     {
                         retry = true;
                         retryCount++;
