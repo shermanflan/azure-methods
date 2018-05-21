@@ -37,13 +37,12 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      * 
      * Also uses Newtonsoft.Json.
      * 
-     * TODO:
+     * NOTES:
      * 
      * 1. See NativeClient-DotNet for a token cache implementation.
      *      a. https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-devquickstarts-dotnet
      * 2. See here for acquire token silently pattern:
      *      a. https://github.com/AzureAD/azure-activedirectory-library-for-dotnet/wiki/AcquireTokenSilentAsync-using-a-cached-token
-     * 2. Does the Auto option get silently called when the user is in an SSO context?
      */
     public class NativeAutoGraphAPI
     {
@@ -72,14 +71,12 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             InitializeContext(Authority);
         }
 
-        // TODO: Refactor to Oauth2 class.
         private void InitializeContext(string authority)
         {
             // Pass ADAL the coordinates it needs to communicate with Azure AD and tell it how to cache tokens.
             authContext = new AuthenticationContext(authority);
         }
 
-        // TODO: Refactor to Oauth2 class.
         public async Task<AuthenticationResult> AcquireToken(string resource, string client, string redirectURL)
         {
             // As the application starts, try to get an access token from cache without prompting the user.

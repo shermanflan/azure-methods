@@ -44,8 +44,8 @@ namespace AzureOAuthClient
                 //Console.WriteLine($"WhoAmI: {api.WhoAmI()}");
                 //api.SignOut();
 
-                //DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
-                //Console.WriteLine($"GetUser: {api2.GetUser("Ricardo").Result}");
+                DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
+                Console.WriteLine($"GetUser: {api2.GetUser("Ricardo").Result}");
 
                 DaemonCertGraphAPI api3 = new DaemonCertGraphAPI(authority, tenant, clientid3, certName, App3APIResourceId, App3APIVersion, App3ApiEndpoint);
                 Console.WriteLine($"GetUser: {api3.GetUser("Ric").Result}");
@@ -55,6 +55,7 @@ namespace AzureOAuthClient
             {
                 Console.WriteLine($"{e.ToString()}");
             }
+
             Console.ReadLine();
         }
     }

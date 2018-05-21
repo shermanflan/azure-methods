@@ -14,16 +14,13 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using AzureOAuthClient.D365.Poco;
+using UltiSecLib.Azure.OAuth2;
 
 namespace AzureOAuthClient.D365.Security.Oauth2
 {
     /*
      * Even though this is a desktop application, this is a confidential 
      * client application so Azure Application Type should be Web app / API.
-     * 
-     * Based on:
-     *  1. https://github.com/Azure-Samples/active-directory-dotnet-daemon
      * 
      * Successful API calls to AD Graph require the following minimum permissions:
      *  1. Microsoft Graph: Application/Read directory data
@@ -34,17 +31,15 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      */
     public class DaemonKeyGraphAPI
     {
-        private static AuthenticationContext authContext = null;
-        private static ClientCredential clientCredential = null;
+        private IAuthorize authKey = null;
 
-        public string Authority { get; set; }
-        public string Tenant { get; set; }
-        public string ClientId { get; set; }
-        public string AppKey { get; set; }
-
-        public string APIResourceId { get; set; } // target API
-        public string APIVersion { get; set; }
-        public string APIEndpoint { get; set; }
+        private string Authority { get; set; }
+        private string Tenant { get; set; }
+        private string ClientId { get; set; }
+        private string AppKey { get; set; }
+        private string APIResourceId { get; set; } // target API
+        private string APIVersion { get; set; }
+        private string APIEndpoint { get; set; }
 
         public DaemonKeyGraphAPI(string authority, string tenant, string client, string appKey
                                 , string resource, string version, string apiEndpoint)
@@ -63,59 +58,16 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             InitializeContext();
         }
 
-        // TODO: Refactor to Oauth2 class.
         private void InitializeContext()
         {
-            // Pass ADAL the coordinates it needs to communicate with Azure AD and tell it how to cache tokens.
-            authContext = new AuthenticationContext(Authority);
-
-            clientCredential = new ClientCredential(ClientId, AppKey);
-        }
-
-        // TODO: Refactor to Oauth2 class.
-        public async Task<AuthenticationResult> AcquireToken()
-        {
-            // Get an access token from Azure AD using client credentials.
-            AuthenticationResult result = null;
-            int retryCount = 0;
-            bool retry = false;
-
-            do
-            {
-                retry = false;
-
-                try
-                {
-                    // ADAL includes an in memory cache, so this call will only send a message 
-                    // to the server if the cached token is expired.
-                    result = await authContext.AcquireTokenAsync(APIResourceId, clientCredential);
-
-                    Debug.WriteLine("Acquired token via app key.");
-                }
-                catch (AdalException ex)
-                {
-                    if (ex.ErrorCode == "temporarily_unavailable"
-                        || ex.ErrorCode == AdalError.NetworkNotAvailable
-                        || ex.ErrorCode == AdalError.ServiceUnavailable)
-                    {
-                        retry = true;
-                        retryCount++;
-                        Thread.Sleep(3000);
-                    }
-
-                    throw ex;
-                }
-
-            } while ((retry == true) && (retryCount < 3));
-
-            return result;
+            authKey = new AuthByAppKey(Authority, Tenant, ClientId, AppKey, APIResourceId);
         }
 
         // Invoke API
         public async Task<string> GetUser(string prefix)
         {
             // Get an Access Token for the AD Graph API
-            AuthenticationResult result = await AcquireToken();
+            AuthenticationResult result = await authKey.AcquireToken();
 
             // Once we have an access_token, invoke API.
             HttpClient httpClient = new HttpClient();
