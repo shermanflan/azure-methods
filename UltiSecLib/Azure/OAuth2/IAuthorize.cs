@@ -12,5 +12,6 @@ namespace UltiSecLib.Azure.OAuth2
     {
         Task<AuthenticationResult> AcquireToken();
 
+        void SignOut();
     }
 }

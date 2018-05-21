@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Azure\OAuth2\AuthByAppKey.cs" />
     <Compile Include="Azure\OAuth2\AuthByCertificate.cs" />
+    <Compile Include="Azure\OAuth2\AuthByConsent.cs" />
     <Compile Include="Azure\OAuth2\IAuthorize.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

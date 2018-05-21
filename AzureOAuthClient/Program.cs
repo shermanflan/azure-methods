@@ -15,6 +15,7 @@ namespace AzureOAuthClient
     {
         private static string aadInstance = ConfigurationManager.AppSettings["AADInstance"];
         private static string tenant = ConfigurationManager.AppSettings["Tenant"];
+
         private static string clientid = ConfigurationManager.AppSettings["app1:ClientId"];
         private static string redirectUri = ConfigurationManager.AppSettings["app1:RedirectUri"];
         private static string graphResourceId = ConfigurationManager.AppSettings["app1:GraphResourceId"]; // target API
@@ -33,6 +34,12 @@ namespace AzureOAuthClient
         private static string App3APIVersion = ConfigurationManager.AppSettings["app3:APIVersion"]; // target API
         private static string App3ApiEndpoint = ConfigurationManager.AppSettings["app3:APIBaseAddress"];
 
+        private static string clientid4 = ConfigurationManager.AppSettings["app4:ClientId"];
+        private static string appKey4 = ConfigurationManager.AppSettings["app4:AppKey"];
+        private static string APIResourceId4 = ConfigurationManager.AppSettings["app4:APIResourceId"]; // target API
+        private static string APIVersion4 = ConfigurationManager.AppSettings["app4:ApiVersion"];
+        private static string APIEndpoint4 = ConfigurationManager.AppSettings["app4:APIBaseAddress"];
+
         public static void Main(string[] args)
         {
             string authority = String.Format(CultureInfo.InvariantCulture, aadInstance, tenant);
@@ -40,15 +47,18 @@ namespace AzureOAuthClient
             try
             {
                 //NativeAutoGraphAPI api = new NativeAutoGraphAPI(authority, tenant, clientid, redirectUri, graphResourceId, graphApiVersion, graphApiEndpoint);
+                //api.SignOut();
                 //Console.WriteLine($"GetUser: {api.GetUser("rrguzman1976")}");
                 //Console.WriteLine($"WhoAmI: {api.WhoAmI()}");
-                //api.SignOut();
 
-                DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
-                Console.WriteLine($"GetUser: {api2.GetUser("Ricardo").Result}");
+                //DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
+                //Console.WriteLine($"GetUser: {api2.GetUser("Ricardo").Result}");
 
-                DaemonCertGraphAPI api3 = new DaemonCertGraphAPI(authority, tenant, clientid3, certName, App3APIResourceId, App3APIVersion, App3ApiEndpoint);
-                Console.WriteLine($"GetUser: {api3.GetUser("Ric").Result}");
+                //DaemonCertGraphAPI api3 = new DaemonCertGraphAPI(authority, tenant, clientid3, certName, App3APIResourceId, App3APIVersion, App3ApiEndpoint);
+                //Console.WriteLine($"GetUser: {api3.GetUser("Ric").Result}");
+
+                //DaemonKeySQLAPI api4 = new DaemonKeySQLAPI(authority, tenant, clientid4, appKey4, APIResourceId4, APIVersion4, APIEndpoint4);
+                //Console.WriteLine($"Get Databases:\n{api4.GetDatabases().Result}");
 
             }
             catch (Exception e)

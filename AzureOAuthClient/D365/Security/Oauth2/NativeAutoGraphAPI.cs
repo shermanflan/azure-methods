@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UltiSecLib.Azure.OAuth2;
 
 namespace AzureOAuthClient.D365.Security.Oauth2
 {
@@ -46,7 +47,8 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      */
     public class NativeAutoGraphAPI
     {
-        private static AuthenticationContext authContext = null;
+        IAuthorize authConsent = null;
+        
         public string Authority { get; set; }
         public string Tenant { get; set; }
         public string ClientId { get; set; }
@@ -73,74 +75,18 @@ namespace AzureOAuthClient.D365.Security.Oauth2
 
         private void InitializeContext(string authority)
         {
-            // Pass ADAL the coordinates it needs to communicate with Azure AD and tell it how to cache tokens.
-            authContext = new AuthenticationContext(authority);
+            authConsent = new AuthByConsent(Authority, Tenant, ClientId, RedirectUri, GraphResourceId);
         }
-
-        public async Task<AuthenticationResult> AcquireToken(string resource, string client, string redirectURL)
-        {
-            // As the application starts, try to get an access token from cache without prompting the user.
-            AuthenticationResult result = null;
-            try
-            {
-                result = await authContext.AcquireTokenSilentAsync(
-                                                resource, 
-                                                client, 
-                                                // Hint to use a specific account
-                                                new UserIdentifier("rrguzman1976@hotmail.com", UserIdentifierType.OptionalDisplayableId)
-                                            );
-
-                Debug.WriteLine("Acquired token silenty.");
-                return result;
-            }
-            catch (AdalException ex)
-            {
-                if (ex.ErrorCode != AdalError.FailedToAcquireTokenSilently
-                    && ex.ErrorCode != AdalError.InteractionRequired)
-                {
-                    throw ex;
-                }
-            }
-
-            // If one does not exist, prompt for access.
-            try
-            {
-                // PromptBehavior.Auto will attempt to return a token without asking the user for credentials.
-                // PromptBehavior.Never will tell ADAL that the user should not be prompted for sign in, 
-                // and ADAL should instead throw an exception if it is unable to return a token.
-                // TODO: Under SSO (ricardo_guzman@ulti), does the challenge prompt still popup with hint?
-                result = await authContext.AcquireTokenAsync(
-                                                resource,
-                                                client,
-                                                new Uri(redirectURL),
-                                                new PlatformParameters(PromptBehavior.Auto), // Auto | Always | SelectAccount | Never
-                                                                                             // Hint to use a specific account
-                                                new UserIdentifier("rrguzman1976@hotmail.com", UserIdentifierType.OptionalDisplayableId)
-                                                //new UserIdentifier("ricardo_guzman@ultimatesoftware.com", UserIdentifierType.OptionalDisplayableId)
-                                            );
-
-                Debug.WriteLine("Acquired token auto.");
-            }
-            catch (AdalException ex) // unable to return a token
-            {
-                Debug.WriteLine($"AcquireToken: {ex.Message}");
-                throw ex;
-            }
-
-            return result;
-        }
-
         public void SignOut()
         {
-            // Clear the token cache
-            authContext.TokenCache.Clear();
+            authConsent.SignOut();
         }
 
         // Invoke API
         public string GetUser(string prefix)
         {
             // Get an Access Token for the Graph API
-            AuthenticationResult result = AcquireToken(GraphResourceId, ClientId, RedirectUri).Result;
+            AuthenticationResult result = authConsent.AcquireToken().Result;
 
             // Once we have an access_token, invoke API.
             string graphRequest = String.Format(CultureInfo.InvariantCulture
@@ -174,7 +120,7 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         public string WhoAmI()
         {
             // Get an Access Token for the Graph API
-            AuthenticationResult result = AcquireToken(GraphResourceId, ClientId, RedirectUri).Result;
+            AuthenticationResult result = authConsent.AcquireToken().Result;
 
             // Once we have an access_token, invoke API.
             string graphRequest = String.Format(CultureInfo.InvariantCulture

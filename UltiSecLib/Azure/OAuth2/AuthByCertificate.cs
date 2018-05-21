@@ -94,6 +94,11 @@ namespace UltiSecLib.Azure.OAuth2
             } while ((retry == true) && (retryCount < 3));
             return result;
         }
+        public void SignOut()
+        {
+            // Clear the token cache
+            authContext.TokenCache.Clear();
+        }
 
         private void InitializeContext()
         {

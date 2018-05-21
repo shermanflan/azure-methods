@@ -65,6 +65,11 @@ namespace UltiSecLib.Azure.OAuth2
 
             return result;
         }
+        public void SignOut()
+        {
+            // Clear the token cache
+            authContext.TokenCache.Clear();
+        }
 
         private void InitializeContext()
         {
