@@ -28,18 +28,23 @@ namespace AzureOAuthClient.D365.Security.Oauth2
      *  3. Windows Azure Active Directory: Application/Read directory data
      *  4. Windows Azure Active Directory: Delegated/Sign in and read user profile
      * Finally, explict permissions need to be granted (Settings > Required Permissions > Grant Permissions
+     * 
+     * TODO:
+     * - This uses static http client instead of a local instance variable.
+     * - Not sure which method is better.
      */
     public class DaemonKeyGraphAPI
     {
-        private IAuthorize authKey = null;
+        private static HttpClient httpClient = new HttpClient();
+        private static IAuthorize authKey = null;
 
-        private string Authority { get; set; }
-        private string Tenant { get; set; }
-        private string ClientId { get; set; }
-        private string AppKey { get; set; }
-        private string APIResourceId { get; set; } // target API
-        private string APIVersion { get; set; }
-        private string APIEndpoint { get; set; }
+        private static string Authority { get; set; }
+        private static string Tenant { get; set; }
+        private static string ClientId { get; set; }
+        private static string AppKey { get; set; }
+        private static string APIResourceId { get; set; } // target API
+        private static string APIVersion { get; set; }
+        private static string APIEndpoint { get; set; }
 
         public DaemonKeyGraphAPI(string authority, string tenant, string client, string appKey
                                 , string resource, string version, string apiEndpoint)
@@ -64,13 +69,12 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         }
 
         // Invoke API
-        public async Task<string> GetUser(string prefix)
+        public static async Task<string> GetUser(string prefix)
         {
             // Get an Access Token for the AD Graph API
             AuthenticationResult result = await authKey.AcquireToken();
 
             // Once we have an access_token, invoke API.
-            HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
             httpClient.DefaultRequestHeaders.Add("api-version", APIVersion);
 

@@ -59,51 +59,51 @@ namespace AzureOAuthClient.D365.Security.Oauth2
         // Invoke API
         public async Task<string> GetDatabases()
         {
-            // Get an Access Token for the AD Graph API
+            // Get an Access Token for the API
             AuthenticationResult result = await authKey.AcquireToken();
+            StringBuilder list = new StringBuilder();
 
             // Once we have an access_token, invoke API.
-            HttpClient httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-            //httpClient.DefaultRequestHeaders.Add("api-version", APIVersion);
-
-            // {0}subscriptions/bfc537d4-b3d2-4e7b-a636-f789f97f62da/resourceGroups/RKOSQLDB01/providers/Microsoft.Sql/servers/rkosqlsrv01/databases
-            string graphRequest = String.Format(CultureInfo.InvariantCulture
-                                                , "{0}subscriptions/bfc537d4-b3d2-4e7b-a636-f789f97f62da/resourceGroups/RKOSQLDB01/providers/Microsoft.Sql/servers/rkosqlsrv01/databases?api-version={1}"
-                                                , APIEndpoint, APIVersion);
-
-            HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
-
-            if (response.IsSuccessStatusCode)
+            using (HttpClient httpClient = new HttpClient())
             {
-                // Read the response and output it to the console.
-                string content = await response.Content.ReadAsStringAsync();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-                try
+                string graphRequest = String.Format(CultureInfo.InvariantCulture
+                                                    , "{0}subscriptions/bfc537d4-b3d2-4e7b-a636-f789f97f62da/resourceGroups/RKOSQLDB01/providers/Microsoft.Sql/servers/rkosqlsrv01/databases?api-version={1}"
+                                                    , APIEndpoint, APIVersion);
+
+                HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    // TODO: Use canonical JSON deserialization methods.
-                    dynamic inputJson = JsonConvert.DeserializeObject(content);
-                    var sequence = inputJson["value"];
-                    StringBuilder list = new StringBuilder();
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
 
-                    foreach (var db in sequence)
+                    try
                     {
-                        list.AppendLine(db["name"].ToString());
+                        // TODO: Use canonical JSON deserialization methods.
+                        dynamic inputJson = JsonConvert.DeserializeObject(content);
+                        var sequence = inputJson["value"];
+
+                        foreach (var db in sequence)
+                        {
+                            list.AppendLine(db["name"].ToString());
+                        }
+
                     }
-
-                    return list.ToString();
-
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.ToString());
+                        throw;
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Debug.WriteLine(e.ToString());
-                    throw;
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
                 }
             }
-            else
-            {
-                throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
-            }
+
+            return list.ToString();
         }
     }
 }

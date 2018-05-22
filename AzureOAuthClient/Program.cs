@@ -31,7 +31,7 @@ namespace AzureOAuthClient
         private static string clientid3 = ConfigurationManager.AppSettings["app3:ClientId"];
         private static string certName = ConfigurationManager.AppSettings["app3:CertName"];
         private static string App3APIResourceId = ConfigurationManager.AppSettings["app3:APIResourceId"]; // target API
-        private static string App3APIVersion = ConfigurationManager.AppSettings["app3:APIVersion"]; // target API
+        private static string App3APIVersion = ConfigurationManager.AppSettings["app3:APIVersion"];
         private static string App3ApiEndpoint = ConfigurationManager.AppSettings["app3:APIBaseAddress"];
 
         private static string clientid4 = ConfigurationManager.AppSettings["app4:ClientId"];
@@ -51,8 +51,8 @@ namespace AzureOAuthClient
                 //Console.WriteLine($"GetUser: {api.GetUser("rrguzman1976")}");
                 //Console.WriteLine($"WhoAmI: {api.WhoAmI()}");
 
-                //DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
-                //Console.WriteLine($"GetUser: {api2.GetUser("Ricardo").Result}");
+                DaemonKeyGraphAPI api2 = new DaemonKeyGraphAPI(authority, tenant, clientid2, appKey, APIResourceId2, APIVersion2, APIEndpoint2);
+                Console.WriteLine($"GetUser: {DaemonKeyGraphAPI.GetUser("Ricardo").Result}");
 
                 //DaemonCertGraphAPI api3 = new DaemonCertGraphAPI(authority, tenant, clientid3, certName, App3APIResourceId, App3APIVersion, App3ApiEndpoint);
                 //Console.WriteLine($"GetUser: {api3.GetUser("Ric").Result}");

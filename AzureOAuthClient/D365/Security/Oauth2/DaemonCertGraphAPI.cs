@@ -68,43 +68,44 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             AuthenticationResult result = await authCert.AcquireToken();
 
             // Once we have an access_token, invoke API.
-            HttpClient httpClient = new HttpClient();
-
-            // Oauth2 Access Token
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-            httpClient.DefaultRequestHeaders.Add("api-version", APIVersion);
-
-            string graphRequest = String.Format(CultureInfo.InvariantCulture
-                                    , "{0}{1}/users?$filter=startswith(displayName, '{2}')"
-                                    , APIEndpoint, Tenant, prefix);
-
-            HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
-
-            if (response.IsSuccessStatusCode)
+            using (HttpClient httpClient = new HttpClient())
             {
-                // Read the response and output it to the console.
-                string content = await response.Content.ReadAsStringAsync();
+                // Oauth2 Access Token
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                httpClient.DefaultRequestHeaders.Add("api-version", APIVersion);
 
-                try
+                string graphRequest = String.Format(CultureInfo.InvariantCulture
+                                        , "{0}{1}/users?$filter=startswith(displayName, '{2}')"
+                                        , APIEndpoint, Tenant, prefix);
+
+                HttpResponseMessage response = await httpClient.GetAsync(graphRequest);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    // TODO: Use canonical JSON deserialization methods.
-                    dynamic inputJson = JsonConvert.DeserializeObject(content);
-                    var sequence = inputJson["value"];
-                    var user1 = sequence[0];
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
 
-                    return String.Format($"Display Name: {user1["displayName"]}\nMobile: {user1["mobile"]}" +
-                                        $"\nUPN: {user1["userPrincipalName"]}\nEmail: {user1["otherMails"][0]}");
+                    try
+                    {
+                        // TODO: Use canonical JSON deserialization methods.
+                        dynamic inputJson = JsonConvert.DeserializeObject(content);
+                        var sequence = inputJson["value"];
+                        var user1 = sequence[0];
 
+                        return String.Format($"Display Name: {user1["displayName"]}\nMobile: {user1["mobile"]}" +
+                                            $"\nUPN: {user1["userPrincipalName"]}\nEmail: {user1["otherMails"][0]}");
+
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.ToString());
+                        throw;
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Debug.WriteLine(e.ToString());
-                    throw;
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
             }
         }
 

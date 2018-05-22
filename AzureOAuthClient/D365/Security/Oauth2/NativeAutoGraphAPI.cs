@@ -97,24 +97,26 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             // Oauth2 Access Token
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-            HttpClient httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("api-version", GraphApiVersion);
-            HttpResponseMessage response = httpClient.SendAsync(request).Result;
-
-            if (!response.IsSuccessStatusCode)
+            using (HttpClient httpClient = new HttpClient())
             {
-                throw new WebException(response.StatusCode.ToString() + ": " + response.ReasonPhrase);
+                httpClient.DefaultRequestHeaders.Add("api-version", GraphApiVersion);
+                HttpResponseMessage response = httpClient.SendAsync(request).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new WebException(response.StatusCode.ToString() + ": " + response.ReasonPhrase);
+                }
+
+                string content = response.Content.ReadAsStringAsync().Result;
+                JObject jResult = JObject.Parse(content);
+
+                if (jResult["odata.error"] != null)
+                {
+                    throw new Exception((string)jResult["odata.error"]["message"]["value"]);
+                }
+
+                return jResult["value"].First["surname"] + ", " + jResult["value"].First["givenName"];
             }
-
-            string content = response.Content.ReadAsStringAsync().Result;
-            JObject jResult = JObject.Parse(content);
-
-            if (jResult["odata.error"] != null)
-            {
-                throw new Exception((string)jResult["odata.error"]["message"]["value"]);
-            }
-
-            return jResult["value"].First["surname"] + ", " + jResult["value"].First["givenName"];
         }
 
         public string WhoAmI()
@@ -131,24 +133,26 @@ namespace AzureOAuthClient.D365.Security.Oauth2
             // Oauth2 Access Token
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-            HttpClient httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("api-version", GraphApiVersion);
-            HttpResponseMessage response = httpClient.SendAsync(request).Result;
-
-            if (!response.IsSuccessStatusCode)
+            using (HttpClient httpClient = new HttpClient())
             {
-                throw new WebException(response.StatusCode.ToString() + ": " + response.ReasonPhrase);
+                httpClient.DefaultRequestHeaders.Add("api-version", GraphApiVersion);
+                HttpResponseMessage response = httpClient.SendAsync(request).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new WebException(response.StatusCode.ToString() + ": " + response.ReasonPhrase);
+                }
+
+                string content = response.Content.ReadAsStringAsync().Result;
+                JObject jResult = JObject.Parse(content);
+
+                if (jResult["odata.error"] != null)
+                {
+                    throw new Exception((string)jResult["odata.error"]["message"]["value"]);
+                }
+
+                return String.Format($"{jResult["givenName"]} {jResult["surname"]}");
             }
-
-            string content = response.Content.ReadAsStringAsync().Result;
-            JObject jResult = JObject.Parse(content);
-
-            if (jResult["odata.error"] != null)
-            {
-                throw new Exception((string)jResult["odata.error"]["message"]["value"]);
-            }
-
-            return String.Format($"{jResult["givenName"]} {jResult["surname"]}");
         }
     }
 }
