@@ -8,6 +8,9 @@ using System.Configuration;
 using System.Globalization;
 
 using AzureOAuthClient.D365.Security.Oauth2;
+using AzureOAuthClient.D365.Dmf;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AzureOAuthClient
 {
@@ -73,12 +76,18 @@ namespace AzureOAuthClient
                 //DaemonKeySQLAPI api4 = new DaemonKeySQLAPI(authority, tenant, clientid4, appKey4, APIResourceId4, APIVersion4, APIEndpoint4);
                 //Console.WriteLine($"Get Databases:\n{api4.GetDatabases().Result}");
 
-                DaemonKeyD365API api5 = new DaemonKeyD365API(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
+                //DaemonKeyD365API api5 = new DaemonKeyD365API(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
                 //Console.WriteLine($"Companies:\n{api5.GetAllCustomers().Result}");
-                Console.WriteLine($"Jobs:\n{api5.GetAllJobs().Result}");
+                //Console.WriteLine($"Jobs:\n{api5.GetAllJobs().Result}");
 
                 //DaemonAutoD365API api6 = new DaemonAutoD365API(authority2, tenant2, clientid6, redirectUri6, APIResourceId6, APIEndpoint6);
                 //Console.WriteLine($"Get Company: {api6.GetCustomer("Contoso Europe")}");
+
+                D365DmfAPI api7 = new D365DmfAPI(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
+                string fileGUID = Guid.NewGuid().ToString();
+
+                Console.WriteLine($"Gen GUID: {fileGUID}");
+                Console.WriteLine($"Blob:\n{api7.GetBlobURI(fileGUID).Result}");
             }
             catch (Exception e)
             {

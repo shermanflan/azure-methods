@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="D365\Dmf\D365DmfAPI.cs" />
     <Compile Include="D365\Security\Oauth2\DaemonAutoD365API.cs" />
     <Compile Include="D365\Security\Oauth2\DaemonCertGraphAPI.cs" />
     <Compile Include="D365\Security\Oauth2\DaemonKeyD365API.cs" />
