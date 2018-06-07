@@ -97,16 +97,16 @@ namespace AzureOAuthClient
 
                 api7.UploadBlobToURI(filePath: payload, uri: writeURI).Wait();
 
-                string resource = String.Format(CultureInfo.InvariantCulture
-                                                , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackageAsync"
-                                                //, "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackage"
-                                                , APIResourceId5);
-
                 string execId = api7.ImportFromPackage(
-                    dmfProject: "RKOImportPositionTypes", blobUri: writeURI, dmfUri: resource, legalEntity: "USMF"
+                    dmfProject: "RKOImportPositionTypes", blobUri: writeURI, legalEntity: "USMF"
                 ).Result;
 
                 Console.WriteLine($"Execution Id!: {execId}");
+
+                string status = api7.GetExecutionStatus(execId: "RKOImportPositionTypes-2018-06-07T17:47:23-4DFCE000FCF345FFBF9FDDA379DA3A06").Result;
+
+                Console.WriteLine($"Status: {status}");
+
             }
             catch (Exception e)
             {

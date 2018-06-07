@@ -100,7 +100,6 @@ namespace AzureOAuthClient.D365.Dmf
             return urlResult.BlobUrl;
         }
 
-        // TODO: TEST
         public async Task UploadBlobToURI(string filePath, string uri)
         {
             // Upload the file to Dynamics 365 for Operations
@@ -111,24 +110,8 @@ namespace AzureOAuthClient.D365.Dmf
             }
         }
 
-        public async Task<string> ImportFromPackage(string dmfProject, string blobUri, string dmfUri, string legalEntity)
+        public async Task<string> ImportFromPackage(string dmfProject, string blobUri, string legalEntity)
         {
-            DynamicsPackage dp = new DynamicsPackage()
-            {
-                packageUrl = blobUri,
-                definitionGroupId = "RKOImportPositionTypes",
-                executionId = "",
-                execute = true,
-                overwrite = true,
-                legalEntityId = legalEntity,
-                failOnError = true,
-                runAsyncWithoutBatch = true,
-                thresholdToRunInBatch = 0
-            };
-
-            string jsonBody = JsonConvert.SerializeObject(dp);
-            StringContent stringContent = new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json");
-
             // Get an Access Token for the API
             AuthenticationResult result = await authKey.AcquireToken();
 
@@ -136,37 +119,79 @@ namespace AzureOAuthClient.D365.Dmf
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-                try
+                string dmfUri = String.Format(CultureInfo.InvariantCulture
+                                                , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackageAsync"
+                                                //, "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackage"
+                                                , APIEndpoint);
+
+                DynamicsPackage dp = new DynamicsPackage()
                 {
-                    // TODO: Use CancellationToken
-                    HttpResponseMessage response = await httpClient.PostAsync(dmfUri, stringContent);
+                    packageUrl = blobUri,
+                    definitionGroupId = "RKOImportPositionTypes",
+                    executionId = "",
+                    execute = true,
+                    overwrite = true,
+                    legalEntityId = legalEntity,
+                    failOnError = true,
+                    runAsyncWithoutBatch = true,
+                    thresholdToRunInBatch = 0
+                };
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // Read the response and output it to the console.
-                        string content = await response.Content.ReadAsStringAsync();
+                string jsonBody = JsonConvert.SerializeObject(dp);
 
-                        // TODO: Use canonical JSON deserialization methods.
-                        JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
+                // TODO: Use CancellationToken
+                HttpResponseMessage response = await httpClient.PostAsync(dmfUri, new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
 
-                        return inputJson["value"].ToString(); // execution id
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
-                    }
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    // TODO: Use canonical JSON deserialization methods.
+                    JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
+
+                    return inputJson["value"].ToString(); // execution id
                 }
-                catch (ArgumentNullException e)
+                else
                 {
-                    Console.WriteLine(e.ToString());
-                }
-                catch (HttpRequestException e)
-                {
-                    Console.WriteLine(e.ToString());
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
                 }
             }
+        }
 
-            return null;
+        public async Task<string> GetExecutionStatus(string execId)
+        {
+            // Get an Access Token for the API
+            AuthenticationResult result = await authKey.AcquireToken();
+
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                string d365Request = String.Format(CultureInfo.InvariantCulture
+                                                    , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.GetExecutionSummaryStatus"
+                                                    , APIResourceId, execId);
+
+                string jsonBody = JsonConvert.SerializeObject(new { executionId = execId });
+
+                HttpResponseMessage response = await httpClient.PostAsync(d365Request, new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
+                //HttpResponseMessage response = await httpClient.GetAsync(d365Request);  // blocks
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    // TODO: Use canonical JSON deserialization methods.
+                    JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
+
+                    return inputJson["value"].ToString(); // execution status
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
+                }
+            }
         }
     }
 
