@@ -84,10 +84,29 @@ namespace AzureOAuthClient
                 //Console.WriteLine($"Get Company: {api6.GetCustomer("Contoso Europe")}");
 
                 D365DmfAPI api7 = new D365DmfAPI(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
+
                 string fileGUID = Guid.NewGuid().ToString();
 
                 Console.WriteLine($"Gen GUID: {fileGUID}");
-                Console.WriteLine($"Blob:\n{api7.GetBlobURI(fileGUID).Result}");
+
+                string writeURI = api7.GetBlobURI(fileGUID).Result;
+
+                Console.WriteLine($"Blob: {writeURI}");
+
+                string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
+
+                api7.UploadBlobToURI(filePath: payload, uri: writeURI).Wait();
+
+                string resource = String.Format(CultureInfo.InvariantCulture
+                                                , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackageAsync"
+                                                //, "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackage"
+                                                , APIResourceId5);
+
+                string execId = api7.ImportFromPackage(
+                    dmfProject: "RKOImportPositionTypes", blobUri: writeURI, dmfUri: resource, legalEntity: "USMF"
+                ).Result;
+
+                Console.WriteLine($"Execution Id!: {execId}");
             }
             catch (Exception e)
             {
