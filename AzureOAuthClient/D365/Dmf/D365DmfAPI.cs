@@ -64,7 +64,7 @@ namespace AzureOAuthClient.D365.Dmf
 
                 string d365Request = String.Format(CultureInfo.InvariantCulture
                                                     , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.GetAzureWriteUrl"
-                                                    , APIEndpoint);
+                                                    , APIResourceId);
 
                 string jsonBody = JsonConvert.SerializeObject(new { uniqueFileName = name });
 
@@ -111,6 +111,12 @@ namespace AzureOAuthClient.D365.Dmf
             }
         }
 
+        public async Task DownloadBlobFromURI(string filePath, string uri)
+        {
+            var blob = new CloudBlockBlob(new Uri(uri));
+            await blob.DownloadToFileAsync(filePath, System.IO.FileMode.Create);
+        }
+
         public async Task<string> ImportFromPackage(string dmfProject, string blobUri, string legalEntity)
         {
             // Get an Access Token for the API
@@ -122,10 +128,9 @@ namespace AzureOAuthClient.D365.Dmf
 
                 string dmfUri = String.Format(CultureInfo.InvariantCulture
                                                 , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackageAsync"
-                                                //, "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ImportFromPackage"
-                                                , APIEndpoint);
+                                                , APIResourceId);
 
-                DynamicsPackage dp = new DynamicsPackage()
+                DynamicsPackageImport dp = new DynamicsPackageImport()
                 {
                     packageUrl = blobUri,
                     definitionGroupId = "RKOImportPositionTypes",
@@ -152,6 +157,85 @@ namespace AzureOAuthClient.D365.Dmf
                     JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
 
                     return inputJson["value"].ToString(); // execution id
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
+                }
+            }
+        }
+
+        public async Task<string> ExportToPackage(string dmfProject, string legalEntity)
+        {
+            // Get an Access Token for the API
+            AuthenticationResult result = await authKey.AcquireToken();
+
+            using (HttpClient httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                string dmfUri = String.Format(CultureInfo.InvariantCulture
+                                                , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.ExportToPackage"
+                                                , APIResourceId);
+
+                DynamicsPackageExport dp = new DynamicsPackageExport()
+                {
+                    definitionGroupId = dmfProject,
+                    packageName = Guid.NewGuid().ToString(),
+                    executionId = "",
+                    reExecute = true,
+                    legalEntityId = legalEntity
+                };
+
+                string jsonBody = JsonConvert.SerializeObject(dp);
+
+                // TODO: Use CancellationToken
+                HttpResponseMessage response = await httpClient.PostAsync(dmfUri, new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    // TODO: Use canonical JSON deserialization methods.
+                    JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
+
+                    return inputJson["value"].ToString(); // execution id
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
+                }
+            }
+        }
+
+        public async Task<string> GetExportedPackageURI(string execId)
+        {
+            // Get an Access Token for the API
+            AuthenticationResult result = await authKey.AcquireToken();
+
+            // Once we have an access_token, invoke API.
+            using (HttpClient httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                string d365Request = String.Format(CultureInfo.InvariantCulture
+                                                    , "{0}/data/DataManagementDefinitionGroups/Microsoft.Dynamics.DataEntities.GetExportedPackageUrl"
+                                                    , APIResourceId);
+
+                string jsonBody = JsonConvert.SerializeObject(new { executionId = execId });
+
+                HttpResponseMessage response = await httpClient.PostAsync(d365Request, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response and output it to the console.
+                    string content = await response.Content.ReadAsStringAsync();
+
+                    // TODO: Use canonical JSON deserialization methods.
+                    JObject inputJson = JsonConvert.DeserializeObject<JObject>(content);
+
+                    return inputJson["value"].ToString(); // URI
                 }
                 else
                 {
@@ -241,7 +325,7 @@ namespace AzureOAuthClient.D365.Dmf
         public string BlobUrl { get; set; }
     }
 
-    public struct DynamicsPackage
+    public struct DynamicsPackageImport
     {
         public string packageUrl { get; set; }
         public string definitionGroupId { get; set; }
@@ -255,5 +339,14 @@ namespace AzureOAuthClient.D365.Dmf
         public bool runAsyncWithoutBatch { get; set; } // async parameter only
 
         public int thresholdToRunInBatch { get; set; } // async parameter only
+    }
+
+    public struct DynamicsPackageExport
+    {
+        public string definitionGroupId { get; set; }
+        public string packageName { get; set; }
+        public string executionId { get; set; }
+        public bool reExecute { get; set; }
+        public string legalEntityId { get; set; }
     }
 }

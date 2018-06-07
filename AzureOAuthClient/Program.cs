@@ -83,7 +83,9 @@ namespace AzureOAuthClient
                 //DaemonAutoD365API api6 = new DaemonAutoD365API(authority2, tenant2, clientid6, redirectUri6, APIResourceId6, APIEndpoint6);
                 //Console.WriteLine($"Get Company: {api6.GetCustomer("Contoso Europe")}");
 
+                // Import
                 D365DmfAPI api7 = new D365DmfAPI(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
+                string execId;
 
                 string fileGUID = Guid.NewGuid().ToString();
 
@@ -97,13 +99,24 @@ namespace AzureOAuthClient
 
                 api7.UploadBlobToURI(filePath: payload, uri: writeURI).Wait();
 
-                string execId = api7.ImportFromPackage(
+                execId = api7.ImportFromPackage(
                     dmfProject: "RKOImportPositionTypes", blobUri: writeURI, legalEntity: "USMF"
                 ).Result;
 
                 Console.WriteLine($"Execution Id!: {execId}");
 
                 api7.PollExecutionStatus(execId, 10000, 50).Wait();
+
+                // Export
+                execId = api7.ExportToPackage(dmfProject: "RKOExportPositionType", legalEntity: "USMF").Result;
+
+                api7.PollExecutionStatus(execId, 10000, 50).Wait();
+
+                string readURI = api7.GetExportedPackageURI(execId).Result;
+
+                string fileOut = String.Format($"C:\\Users\\ricardogu\\Desktop\\Personal\\Data\\{Guid.NewGuid().ToString()}.zip");
+
+                api7.DownloadBlobFromURI(fileOut, readURI).Wait();
 
                 Console.WriteLine($"Finished.");
             }
