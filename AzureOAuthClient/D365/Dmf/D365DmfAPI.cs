@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Http;
@@ -157,6 +158,44 @@ namespace AzureOAuthClient.D365.Dmf
                     throw new InvalidOperationException($"Failed to access API:  {response.ReasonPhrase}\n");
                 }
             }
+        }
+
+        /*
+         * Statuses:
+         * Unknown
+         * NotRun
+         * Executing
+         * Succeeded
+         * PartiallySucceeded
+         * Failed
+         * Canceled
+         */
+        public async Task PollExecutionStatus(string execId, int sleep, int tries)
+        {
+            // Check for status
+            string output;
+            int maxLoop = tries;
+
+            do
+            {
+                Console.WriteLine("Waiting for package to execution to complete");
+
+                Thread.Sleep(sleep);
+                maxLoop--;
+
+                if (maxLoop <= 0)
+                {
+                    break;
+                }
+
+                Console.WriteLine("Checking status");
+
+                output = await GetExecutionStatus(execId);
+
+                Console.WriteLine($"Status of import: {output}");
+
+            }
+            while (output == "NotRun" || output == "Executing");
         }
 
         public async Task<string> GetExecutionStatus(string execId)

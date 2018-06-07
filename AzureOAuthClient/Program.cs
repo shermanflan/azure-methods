@@ -103,10 +103,9 @@ namespace AzureOAuthClient
 
                 Console.WriteLine($"Execution Id!: {execId}");
 
-                string status = api7.GetExecutionStatus(execId: "RKOImportPositionTypes-2018-06-07T17:47:23-4DFCE000FCF345FFBF9FDDA379DA3A06").Result;
+                api7.PollExecutionStatus(execId, 10000, 50).Wait();
 
-                Console.WriteLine($"Status: {status}");
-
+                Console.WriteLine($"Finished.");
             }
             catch (Exception e)
             {
