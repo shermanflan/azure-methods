@@ -85,8 +85,11 @@ namespace AzureOAuthClient
 
                 // Import
                 D365DmfAPI api7 = new D365DmfAPI(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
-                string execId;
 
+                string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
+                string execId = api7.Import(payload: payload, project: "RKOImportPositionTypes", company: "USMF").Result;
+
+                /*
                 string fileGUID = Guid.NewGuid().ToString();
 
                 Console.WriteLine($"Gen GUID: {fileGUID}");
@@ -95,8 +98,6 @@ namespace AzureOAuthClient
 
                 Console.WriteLine($"Blob: {writeURI}");
 
-                string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
-
                 api7.UploadBlobToURI(filePath: payload, uri: writeURI).Wait();
 
                 execId = api7.ImportFromPackage(
@@ -104,10 +105,12 @@ namespace AzureOAuthClient
                 ).Result;
 
                 Console.WriteLine($"Execution Id!: {execId}");
+                */
 
                 api7.PollExecutionStatus(execId, 10000, 50).Wait();
 
                 // Export
+                /*
                 execId = api7.ExportToPackage(dmfProject: "RKOExportPositionType", legalEntity: "USMF").Result;
 
                 api7.PollExecutionStatus(execId, 10000, 50).Wait();
@@ -117,7 +120,7 @@ namespace AzureOAuthClient
                 string fileOut = String.Format($"C:\\Users\\ricardogu\\Desktop\\Personal\\Data\\{Guid.NewGuid().ToString()}.zip");
 
                 api7.DownloadBlobFromURI(fileOut, readURI).Wait();
-
+                */
                 Console.WriteLine($"Finished.");
             }
             catch (Exception e)

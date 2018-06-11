@@ -51,6 +51,27 @@ namespace AzureOAuthClient.D365.Dmf
         }
 
         // Invoke DMF API
+        public async Task<string> Import(string payload, string project, string company)
+        {
+            //string execId;
+
+            string fileGUID = Guid.NewGuid().ToString();
+
+            Console.WriteLine($"Gen GUID: {fileGUID}");
+
+            string writeURI = await GetBlobURI(fileGUID);
+
+            Console.WriteLine($"Blob: {writeURI}");
+
+            //string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
+
+            await UploadBlobToURI(filePath: payload, uri: writeURI);
+
+            return await ImportFromPackage(dmfProject: "RKOImportPositionTypes", blobUri: writeURI, legalEntity: "USMF");
+
+            //Console.WriteLine($"Execution Id!: {execId}");
+        }
+
         public async Task<string> GetBlobURI(string name)
         {
             // Get an Access Token for the API
