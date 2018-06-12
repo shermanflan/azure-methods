@@ -53,23 +53,32 @@ namespace AzureOAuthClient.D365.Dmf
         // Invoke DMF API
         public async Task<string> Import(string payload, string project, string company)
         {
-            //string execId;
-
             string fileGUID = Guid.NewGuid().ToString();
 
-            Console.WriteLine($"Gen GUID: {fileGUID}");
+            Debug.WriteLine($"Gen GUID: {fileGUID}");
 
             string writeURI = await GetBlobURI(fileGUID);
 
-            Console.WriteLine($"Blob: {writeURI}");
-
-            //string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
+            Debug.WriteLine($"Blob: {writeURI}");
 
             await UploadBlobToURI(filePath: payload, uri: writeURI);
 
-            return await ImportFromPackage(dmfProject: "RKOImportPositionTypes", blobUri: writeURI, legalEntity: "USMF");
+            string execId = await ImportFromPackage(dmfProject: project, blobUri: writeURI, legalEntity: company);
 
-            //Console.WriteLine($"Execution Id!: {execId}");
+            return execId;
+        }
+
+        public async Task<string> Export(string target, string project, string company)
+        {
+            string execId = await ExportToPackage(dmfProject: project, legalEntity: company);
+
+            await PollExecutionStatus(execId, 10000, 50);
+
+            string readURI = await GetExportedPackageURI(execId);
+
+            await DownloadBlobFromURI(target, readURI);
+
+            return execId;
         }
 
         public async Task<string> GetBlobURI(string name)
@@ -154,7 +163,7 @@ namespace AzureOAuthClient.D365.Dmf
                 DynamicsPackageImport dp = new DynamicsPackageImport()
                 {
                     packageUrl = blobUri,
-                    definitionGroupId = "RKOImportPositionTypes",
+                    definitionGroupId = dmfProject,
                     executionId = "",
                     execute = true,
                     overwrite = true,
@@ -283,7 +292,7 @@ namespace AzureOAuthClient.D365.Dmf
 
             do
             {
-                Console.WriteLine("Waiting for package to execution to complete");
+                Debug.WriteLine("Waiting for package execution to complete");
 
                 Thread.Sleep(sleep);
                 maxLoop--;
@@ -293,11 +302,11 @@ namespace AzureOAuthClient.D365.Dmf
                     break;
                 }
 
-                Console.WriteLine("Checking status");
+                Debug.WriteLine("Checking status");
 
                 output = await GetExecutionStatus(execId);
 
-                Console.WriteLine($"Status of import: {output}");
+                Debug.WriteLine($"Job Status: {output}");
 
             }
             while (output == "NotRun" || output == "Executing");
@@ -319,7 +328,6 @@ namespace AzureOAuthClient.D365.Dmf
                 string jsonBody = JsonConvert.SerializeObject(new { executionId = execId });
 
                 HttpResponseMessage response = await httpClient.PostAsync(d365Request, new StringContent(jsonBody, UnicodeEncoding.UTF8, "application/json"));
-                //HttpResponseMessage response = await httpClient.GetAsync(d365Request);  // blocks
 
                 if (response.IsSuccessStatusCode)
                 {

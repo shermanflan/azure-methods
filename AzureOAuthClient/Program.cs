@@ -87,40 +87,23 @@ namespace AzureOAuthClient
                 D365DmfAPI api7 = new D365DmfAPI(authority2, tenant2, clientid5, appKey5, APIResourceId5, APIEndpoint5);
 
                 string payload = @"C:\Users\ricardogu\Desktop\Personal\Data\RKOPositionTypes_Import.zip";
-                string execId = api7.Import(payload: payload, project: "RKOImportPositionTypes", company: "USMF").Result;
+                Task<string> execId = api7.Import(payload: payload, project: "RKOImportPositionTypes", company: "USMF");
 
-                /*
-                string fileGUID = Guid.NewGuid().ToString();
+                Task tStatus = execId.ContinueWith(t =>
+                {
+                    Console.WriteLine($"Continutation: {t.Result}");
+                    api7.PollExecutionStatus(t.Result, 10000, 50).Wait();
+                });
 
-                Console.WriteLine($"Gen GUID: {fileGUID}");
-
-                string writeURI = api7.GetBlobURI(fileGUID).Result;
-
-                Console.WriteLine($"Blob: {writeURI}");
-
-                api7.UploadBlobToURI(filePath: payload, uri: writeURI).Wait();
-
-                execId = api7.ImportFromPackage(
-                    dmfProject: "RKOImportPositionTypes", blobUri: writeURI, legalEntity: "USMF"
-                ).Result;
-
-                Console.WriteLine($"Execution Id!: {execId}");
-                */
-
-                api7.PollExecutionStatus(execId, 10000, 50).Wait();
+                tStatus.Wait();
 
                 // Export
-                /*
-                execId = api7.ExportToPackage(dmfProject: "RKOExportPositionType", legalEntity: "USMF").Result;
-
-                api7.PollExecutionStatus(execId, 10000, 50).Wait();
-
-                string readURI = api7.GetExportedPackageURI(execId).Result;
-
                 string fileOut = String.Format($"C:\\Users\\ricardogu\\Desktop\\Personal\\Data\\{Guid.NewGuid().ToString()}.zip");
 
-                api7.DownloadBlobFromURI(fileOut, readURI).Wait();
-                */
+                Task tFileOut = api7.Export(target: fileOut, project: "RKOExportPositionType", company: "USMF");
+
+                tFileOut.Wait();
+
                 Console.WriteLine($"Finished.");
             }
             catch (Exception e)
