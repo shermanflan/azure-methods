@@ -11,8 +11,8 @@
   DTS:LocaleID="1033"
   DTS:ObjectName="POC1_Blob"
   DTS:PackageType="5"
-  DTS:VersionBuild="9"
-  DTS:VersionGUID="{C444EDC4-65C1-48F7-90B6-386C4CE250C1}">
+  DTS:VersionBuild="12"
+  DTS:VersionGUID="{FD44573D-00F0-4877-8326-A68B81DDB5BC}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -26,7 +26,7 @@
           ConnectionString="DefaultEndpointsProtocol=https;AccountName=d365demo02;EndpointSuffix=core.windows.net">
           <AccountKey
             Sensitive="1"
-            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAWaQhcf+wzkm8KOXqzltTOwAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAAARgVOvNQH1Wr9J00bW55UvAAAAAASAAACgAAAAEAAAAD7HMe85j5BdP80pyYRA0bq4AAAAeMUD5o/Z5TghtG+Z8QzhuoxufNmrwK1RGadG46+xI6OKJHPBMWNJ5jl5Zit0LCo/dubhFJY3YS1Cj9O0ofLhIlnU75zV1cbmGCI1w1xCBUSOaggFOPM35S0L88ecp39oA4gNvdp7MI15i1Cyo00D4JtW0xRFTf9rtxc4Yo2YdrnTCpInAJt5Ty6S0/9zgqitWkfAvFoWXWpT51TeId1U4vOHo4DPJTAT+bwDqGowJ/cJPd8ztcOp2hQAAAAtAFE8Whj81SoI/S1G1YXWEuqd8A</AccountKey>
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA6ig2Ge/GY0WlQSH8AwO/jwAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAABiRqQqyD4v2Kz1jZ1+xVp2AAAAAASAAACgAAAAEAAAAOcogCDTe6NwOoSBcKUm9ka4AAAAkFdZQ6AeBvq/+0v6iiEC8oqEo2KSwNTF3S7N5EBD56nB8KovmGvFgXAHz1pGgJgh7RvrguelMbI1tcDVhJZ3zgqILTRwc6v+LoLiE0ci5FzNeyJZN5DwGaVhD0HNX4AWcBE1YBU4xwQzuswSYrbxhIVMhPFuhQTsAaBd8mpIgoYXySRadIOweWeMQ2R17Zbo12g+FmDCR1iBCPQRUaiZX/qFBwR9Q2vftvQtZHmlhxoUo/kcSVR30xQAAABdoqli0EBA9hsMZhiLAjNxvj/jEA</AccountKey>
         </AzureStorageConnectionManager>
       </DTS:ObjectData>
     </DTS:ConnectionManager>
@@ -419,15 +419,15 @@
         <NodeLayout
           Size="211,42"
           Id="Package\Azure Blob Download Task"
-          TopLeft="56,77" />
+          TopLeft="53,78.3541666599404" />
         <NodeLayout
           Size="197,42"
           Id="Package\Azure Blob Upload Task"
-          TopLeft="374.5,77" />
+          TopLeft="56,133.333333053523" />
         <NodeLayout
           Size="155,42"
           Id="Package\Azure Data Flow Task"
-          TopLeft="679,77" />
+          TopLeft="282,80.2499999838571" />
       </GraphLayout>
     </LayoutInfo>
   </Package>
