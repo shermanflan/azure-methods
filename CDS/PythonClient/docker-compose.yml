@@ -1,0 +1,12 @@
+version: "3"
+services:
+  python-cds:
+    image: python-cds
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AAD_TENANT=
+      - AAD_CLIENT=
+      - AAD_SECRET=
+      - AAD_RESOURCE=

@@ -102,13 +102,14 @@ def get_patient(base_url, headers, by_filter):
     return patient
 
 
-def update_patient(base_url, headers, by_filter):
+def update_patient(base_url, headers, by_filter, data):
     """
     PATCH a patient.
 
     :param base_url: base URL for request
     :param headers: HTTP request headers
     :param by_filter: patient OData filter
+    :param data: patient key/value pairs
     :return: Patient dict
     """
     patient = get_patient(base_url, headers, by_filter)
@@ -118,15 +119,9 @@ def update_patient(base_url, headers, by_filter):
         'Prefer': 'return=representation'
     })
     url = f"{base_url}/pah_patients({patient['pah_patientid']})"
-    payload = {
-        "emailaddress": "johnny5@mail7.com",
-        "pah_address1_telephone1": "3241112222",
-        "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
-        "pah_gender": "804150000",
-    }
 
     try:
-        r = requests.patch(url, headers=headers, data=json.dumps(payload))
+        r = requests.patch(url, headers=headers, data=json.dumps(data))
         r.raise_for_status()
         patient = r.json()
     except HTTPError as e:
@@ -198,7 +193,8 @@ def delete_patient(base_url, headers, by_filter):
         raise e
 
 
-# TODO: Could this work on Alpine?
+# TODO: Could this work on python:-alpine?
+# TODO: Create a python:-windowsservercore image?
 if __name__ == "__main__":
 
     authority = 'https://login.microsoftonline.com'  # TODO: move to env var
@@ -225,15 +221,22 @@ if __name__ == "__main__":
     # hello_world(base_url=request_url, headers=common_headers)
 
     # GET pah_patient
-    get_patients(base_url=request_url, headers=common_headers,
-                 by_filter="contains(pah_name, 'Saitama Sensei')")
+    # get_patients(base_url=request_url, headers=common_headers,
+    #              by_filter="contains(pah_name, 'Saitama Sensei')")
 
     # get_patient(base_url=request_url, headers=common_headers,
     #             by_filter="pah_name eq 'Saitama Sensei'")
 
     # PATCH pah_patient
-    # update_patient(base_url=request_url, headers=common_headers,
-    #                by_filter="pah_name eq 'Saitama Sensei'")
+    payload = {
+        "emailaddress": "johnny5@maily.com",
+        "pah_address1_telephone1": "3241112222",
+        "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
+        "pah_gender": "804150000",
+    }
+    update_patient(base_url=request_url, headers=common_headers,
+                   by_filter="pah_name eq 'Saitama Sensei'",
+                   data=payload)
 
     # POST pah_patient
     # payload = {
