@@ -1,0 +1,5 @@
+POSITIONTYPEID,CLASSIFICATION,DESCRIPTION
+Fulltime,FullTime,Fulltime employee
+Parttime,PartTime,Parttime employee
+SeasonalFT,FullTime,Seasonal full time
+SeasonalPT,PartTime,Seasonal part time
