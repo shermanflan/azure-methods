@@ -130,6 +130,7 @@ def update_patient(base_url, headers, by_filter, data):
 
     logger.debug(f"pah_patientid: {patient['pah_patientid']}")
     logger.debug(f"pah_name: {patient['pah_name']}")
+    logger.debug(f"pah_address1_line1: {patient['pah_address1_line1']}")
     logger.debug(f"pah_address1_telephone1: {patient['pah_address1_telephone1']}")
     logger.debug(f"pah_birthdate: {patient['pah_birthdate']}")
     logger.debug(f"emailaddress: {patient['emailaddress']}")
@@ -231,6 +232,7 @@ if __name__ == "__main__":
     payload = {
         "emailaddress": "johnny5@maily.com",
         "pah_address1_telephone1": "3241112222",
+        "pah_address1_line1": f"Test {datetime.now().isoformat()}",
         "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
         "pah_gender": "804150000",
     }
