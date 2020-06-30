@@ -194,8 +194,7 @@ def delete_patient(base_url, headers, by_filter):
         raise e
 
 
-# TODO: Could this work on python:-alpine?
-# TODO: Create a python:-windowsservercore image?
+# TODO: Create a .NET core:Ubuntu image?
 if __name__ == "__main__":
 
     authority = 'https://login.microsoftonline.com'  # TODO: move to env var
@@ -232,7 +231,7 @@ if __name__ == "__main__":
     payload = {
         "emailaddress": "johnny5@maily.com",
         "pah_address1_telephone1": "3241112222",
-        "pah_address1_line1": f"Test {datetime.now().isoformat()}",
+        "pah_address1_line1": f"Address {datetime.now().isoformat()}",
         "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
         "pah_gender": "804150000",
     }
