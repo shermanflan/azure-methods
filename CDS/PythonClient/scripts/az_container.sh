@@ -1,18 +1,18 @@
 #!/bin/bash -eux
 
 declare CONTAINER="pah-cds-python"
-declare RESOURCE_GROUP=
-declare SUBSCRIPTION=
-declare REGISTRY=
+declare RESOURCE_GROUP=""
+declare SUBSCRIPTION=""
+declare REGISTRY=""
 declare LOCATION="East US"
 declare IMAGE="cdspython:1.0"
-declare ENV_TENANT=
-declare ENV_CLIENT=
-declare ENV_RESOURCE=
-declare ENV_SECRET=
-declare REGISTRY_URL=
-declare REGISTRY_USER=
-declare REGISTRY_PWD=
+declare ENV_TENANT=""
+declare ENV_CLIENT=""
+declare ENV_RESOURCE=""
+declare ENV_SECRET=""
+declare REGISTRY_URL=""
+declare REGISTRY_USER=""
+declare REGISTRY_PWD=""
 declare YAML_CONFIG="./cds-python.yml"
 
 # Create new ACR
@@ -59,10 +59,10 @@ declare YAML_CONFIG="./cds-python.yml"
 #  --file $YAML_CONFIG
 
 # Start container instance
-#az container start -n $CONTAINER \
-#  --resource-group $RESOURCE_GROUP \
-#  --subscription $SUBSCRIPTION \
-#  --verbose --debug
+az container start -n $CONTAINER \
+  --resource-group $RESOURCE_GROUP \
+  --subscription $SUBSCRIPTION \
+  --verbose --debug
 
 # Start using Powershell
 #Invoke-AzureRmResourceAction `
@@ -70,4 +70,20 @@ declare YAML_CONFIG="./cds-python.yml"
 #  -ResourceName $CONTAINER `
 #  -Action Start `
 #  -Force `
+#  -ResourceType Microsoft.ContainerInstance/containerGroups
+
+# Start using new Az module
+#Invoke-AzResourceAction `
+#  -Action Start -Force `
+#  -ResourceGroupName $RESOURCE_GROUP `
+#  -ResourceName $CONTAINER `
+#  -ResourceType Microsoft.ContainerInstance/containerGroups
+
+# Grant access to a resource
+# Can be used for Function Apps for example
+#New-AzRoleAssignment `
+#  -ObjectId  `
+#  -RoleDefinitionName Contributor `
+#  -ResourceGroupName $RESOURCE_GROUP `
+#  -ResourceName $CONTAINER `
 #  -ResourceType Microsoft.ContainerInstance/containerGroups
