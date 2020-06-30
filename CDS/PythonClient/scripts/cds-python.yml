@@ -1,0 +1,28 @@
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-reference-yaml
+name: pah-cds-python  # Name of the container group
+apiVersion: 2018-10-01
+location: "East US"
+properties: # Properties of container group
+  containers: # Array of container instances in the group
+  - name: cdspython # Name of an instance
+    properties: # Properties of an instance
+      image:  # Container image used to create the instance
+      environmentVariables:
+      - name: AAD_TENANT
+        secureValue:
+      - name: AAD_CLIENT
+        secureValue:
+      - name: AAD_RESOURCE
+        value:
+      - name: AAD_SECRET
+        secureValue:
+      resources: # Resource requirements of the instance
+        requests:
+          memoryInGB: 1.5
+          cpu: 1
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server:
+    username:
+    password:
+  restartPolicy: Never
+  osType: Linux
