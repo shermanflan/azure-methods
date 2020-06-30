@@ -27,6 +27,11 @@ declare REGISTRY_PWD=""
 # Build and publish docker image to ACR
 #az acr build --registry $REGISTRY --image $IMAGE .
 
+# Alternative publish using native Docker
+#docker login $REGISTRY_URL
+#docker tag python-cds $REGISTRY_URL/$IMAGE
+#docker push $REGISTRY_URL/$IMAGE
+
 # TODO: Can be defined using YAML file.
 # Create new container group
 #az container create \
