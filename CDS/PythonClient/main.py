@@ -238,8 +238,6 @@ if __name__ == "__main__":
         driver, server, database, username, password
     )
 
-    hello_odbc(cnxn_str)
-
     api_version = '9.1'
     request_url = f"{base_resource}/api/data/v{api_version}"
 
@@ -265,19 +263,19 @@ if __name__ == "__main__":
     #             by_filter="pah_name eq 'Saitama Sensei'")
 
     # PATCH pah_patient
-    # payload = {
-    #     "emailaddress": "johnny5@nomail.com",
-    #     "pah_address1_telephone1": "3241112222",
-    #     "pah_address1_line1": f"Address1-{datetime.now().isoformat()}",
-    #     "pah_address1city": f"Marfa-{datetime.now().isoformat()}",
-    #     "pah_address1_stateorprovince": f"Texas",
-    #     "pah_address1_postalcode": f"79757",
-    #     "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
-    #     "pah_gender": "804150000",
-    # }
-    # update_patient(base_url=request_url, headers=common_headers,
-    #                by_filter="pah_name eq 'Saitama Sensei'",
-    #                data=payload)
+    payload = {
+        "emailaddress": "johnny5@nomail.com",
+        "pah_address1_telephone1": "3241112222",
+        "pah_address1_line1": f"Address1-{datetime.now().isoformat()}",
+        "pah_address1city": f"Marfa-{datetime.now().isoformat()}",
+        "pah_address1_stateorprovince": f"Texas",
+        "pah_address1_postalcode": f"79757",
+        "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
+        "pah_gender": "804150000",
+    }
+    update_patient(base_url=request_url, headers=common_headers,
+                   by_filter="pah_name eq 'Saitama Sensei'",
+                   data=payload)
 
     # POST pah_patient
     # payload = {
@@ -293,5 +291,7 @@ if __name__ == "__main__":
     # DELETE pah_patient
     # delete_patient(base_url=request_url, headers=common_headers,
     #                by_filter="pah_name eq 'Saitama Sensei2'")
+
+    hello_odbc(cnxn_str)
 
     logger.info(f"Processing complete...")

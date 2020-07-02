@@ -6,7 +6,7 @@ properties: # Properties of container group
   containers: # Array of container instances in the group
   - name: cdspython # Name of an instance
     properties: # Properties of an instance
-      image:  # Container image used to create the instance
+      image: pahintegrationregistry.azurecr.io/cdspython:1.0 # Container image used to create the instance
       environmentVariables:
       - name: AAD_TENANT
         secureValue:
@@ -16,6 +16,16 @@ properties: # Properties of container group
         value:
       - name: AAD_SECRET
         secureValue:
+      - name: DB_DRIVER
+        value: "{ODBC Driver 17 for SQL Server}"
+      - name: DB_SERVER
+        value:
+      - name: DB
+        value:
+      - name: DB_USER
+        secureValue:
+      - name: DB_PWD
+        secureValue: ""
       resources: # Resource requirements of the instance
         requests:
           memoryInGB: 1.5

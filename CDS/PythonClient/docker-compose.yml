@@ -10,7 +10,7 @@ services:
       - AAD_CLIENT=
       - AAD_SECRET=
       - AAD_RESOURCE=
-      - DB_DRIVER=
+      - DB_DRIVER={ODBC Driver 17 for SQL Server}
       - DB_SERVER=
       - DB=
       - DB_USER=
