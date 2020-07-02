@@ -3,6 +3,7 @@ import json
 import os
 
 from adal import AuthenticationContext
+import pyodbc
 import requests
 from requests.exceptions import HTTPError
 
@@ -194,6 +195,31 @@ def delete_patient(base_url, headers, by_filter):
         raise e
 
 
+def hello_odbc(cnxn_str):
+    """
+    Simple connection via ODBC.
+
+    :param cnxn_str: the full connection string
+    :return: None
+    """
+
+    # This calls cnxn.commit() when going out of scope.
+    with pyodbc.connect(cnxn_str, autocommit=False) as cnxn:
+        cursor = cnxn.cursor()
+        qry1 = """
+            SELECT  source
+                    , [Pharmacy Code] AS PharmacyCode
+                    , patientKey
+            FROM    [dbo].[patientFinPlan] WITH (READUNCOMMITTED)
+            ORDER BY [CHANGE DATE]
+            OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
+        """
+
+        # Iterate through result set, row by row
+        for row in cursor.execute(qry1):
+            logger.info(f"DB TEST: {row.source}, {row.PharmacyCode}, {row.patientKey}")
+
+
 # TODO: Create a .NET core:Ubuntu image?
 if __name__ == "__main__":
 
@@ -202,6 +228,17 @@ if __name__ == "__main__":
     client_id = os.environ['AAD_CLIENT']
     client_secret = os.environ['AAD_SECRET']
     base_resource = os.environ['AAD_RESOURCE']
+    driver = os.environ['DB_DRIVER']
+    server = os.environ['DB_SERVER']
+    database = os.environ['DB']
+    username = os.environ['DB_USER']
+    password = os.environ['DB_PWD']
+
+    cnxn_str = 'DRIVER={0};SERVER={1};DATABASE={2};UID={3};PWD={4}'.format(
+        driver, server, database, username, password
+    )
+
+    hello_odbc(cnxn_str)
 
     api_version = '9.1'
     request_url = f"{base_resource}/api/data/v{api_version}"
@@ -228,19 +265,19 @@ if __name__ == "__main__":
     #             by_filter="pah_name eq 'Saitama Sensei'")
 
     # PATCH pah_patient
-    payload = {
-        "emailaddress": "johnny5@maily.com",
-        "pah_address1_telephone1": "3241112222",
-        "pah_address1_line1": f"Address1-{datetime.now().isoformat()}",
-        "pah_address1city": f"Marfa-{datetime.now().isoformat()}",
-        "pah_address1_stateorprovince": f"Texas",
-        "pah_address1_postalcode": f"79757",
-        "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
-        "pah_gender": "804150000",
-    }
-    update_patient(base_url=request_url, headers=common_headers,
-                   by_filter="pah_name eq 'Saitama Sensei'",
-                   data=payload)
+    # payload = {
+    #     "emailaddress": "johnny5@nomail.com",
+    #     "pah_address1_telephone1": "3241112222",
+    #     "pah_address1_line1": f"Address1-{datetime.now().isoformat()}",
+    #     "pah_address1city": f"Marfa-{datetime.now().isoformat()}",
+    #     "pah_address1_stateorprovince": f"Texas",
+    #     "pah_address1_postalcode": f"79757",
+    #     "pah_birthdate": datetime(year=2020, month=5, day=17).isoformat(),
+    #     "pah_gender": "804150000",
+    # }
+    # update_patient(base_url=request_url, headers=common_headers,
+    #                by_filter="pah_name eq 'Saitama Sensei'",
+    #                data=payload)
 
     # POST pah_patient
     # payload = {

@@ -10,3 +10,9 @@ services:
       - AAD_CLIENT=
       - AAD_SECRET=
       - AAD_RESOURCE=
+      - DB_DRIVER=
+      - DB_SERVER=
+      - DB=
+      - DB_USER=
+      # Escapes '$'
+      - DB_PWD=
