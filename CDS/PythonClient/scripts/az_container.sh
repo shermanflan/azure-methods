@@ -1,11 +1,11 @@
 #!/bin/bash -eux
 
 declare CONTAINER="pah-cds-python"
-declare RESOURCE_GROUP=""
+declare RESOURCE_GROUP="DevPharmacyAtHome"
 declare SUBSCRIPTION=""
 declare REGISTRY=""
 declare LOCATION="East US"
-declare IMAGE="cdspython:1.0"
+declare IMAGE=""
 declare ENV_TENANT=""
 declare ENV_CLIENT=""
 declare ENV_RESOURCE=""
@@ -24,8 +24,9 @@ declare DB_PWD=""
 #az acr create --resource-group $RESOURCE_GROUP \
 #  --name $REGISTRY \
 #  --admin-enabled true --sku Basic \
-#  -l $LOCATION \
-#  --subscription $SUBSCRIPTION
+#  -l "$LOCATION" \
+#  --subscription "$SUBSCRIPTION" \
+#  --verbose
 
 # Enable admin account for invocation from ACI
 #az acr update -n $REGISTRY --admin-enabled true
@@ -66,13 +67,14 @@ declare DB_PWD=""
 # Alternative using YAML file.
 #az container create \
 #  --resource-group $RESOURCE_GROUP \
-#  --file $YAML_CONFIG
+#  --file $YAML_CONFIG \
+#  --verbose
 
 # Start container instance
-az container start -n $CONTAINER \
-  --resource-group $RESOURCE_GROUP \
-  --subscription $SUBSCRIPTION \
-  --verbose --debug
+#az container start -n $CONTAINER \
+#  --resource-group $RESOURCE_GROUP \
+#  --subscription $SUBSCRIPTION \
+#  --verbose --debug
 
 # Assign security role to a principal.
 #az role assignment create \
@@ -80,3 +82,5 @@ az container start -n $CONTAINER \
 #  --assignee $PRINCIPAL \
 #  --subscription $SUBSCRIPTION \
 #  --scope $APP_SCOPE
+
+# TODO: Clean up resources
