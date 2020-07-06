@@ -84,3 +84,7 @@ declare DB_PWD=""
 #  --scope $APP_SCOPE
 
 # TODO: Clean up resources
+az container delete \
+  --name $CONTAINER \
+  --resource-group $RESOURCE_GROUP \
+  --subscription $SUBSCRIPTION
