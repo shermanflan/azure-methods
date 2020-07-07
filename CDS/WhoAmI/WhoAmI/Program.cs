@@ -11,6 +11,7 @@ using System.Web;
 
 namespace WhoAmI
 {
+    // TODO: Create a .NET core / Ubuntu image?
     public class Program
     {
         public static void Main(string[] args)
@@ -73,13 +74,13 @@ namespace WhoAmI
                 //app.GetPatient(client);
 
                 // PATCH: Patient (pah_patient)
-                //app.UpdatePatient(client);
+                app.UpdatePatient(client);
 
                 // POST: Patient (pah_patient)
                 //app.CreatePatient(client);
 
                 // POST: Patient (pah_patient)
-                app.UpsertPatient(client);
+                //app.UpsertPatient(client);
 
                 // DELETE: Patient (pah_patient)
                 //app.DeletePatient(client);
@@ -167,11 +168,12 @@ namespace WhoAmI
             client.DefaultRequestHeaders.Add("Prefer", "return=representation");
 
             // PATCH: pah_patient
-            string patientId = "df995569-d7b7-ea11-a812-000d3a33fcaa";
+            string patientId = "af2179a3-20ba-ea11-a812-000d3a33f3c3";
             string resource = $"pah_patients({patientId})";
 
             JObject patient = new JObject(
                 new JProperty("emailaddress", "johnny5@mail.com"),
+                new JProperty("pah_address1_line1", $"From windows: {DateTime.Now.ToString("HH:mm:ss.ffffzzz")}"),
                 new JProperty("pah_address1_telephone1", "3241112222"),
                 new JProperty("pah_birthdate", new DateTime(2020, 3, 20)),
                 new JProperty("pah_gender", "804150000")
