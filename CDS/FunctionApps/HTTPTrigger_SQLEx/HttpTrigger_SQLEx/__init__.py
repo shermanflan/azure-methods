@@ -29,18 +29,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 cursor = cnxn.cursor()
 
                 qry1 = """
-                    SELECT  TOP (?)
-                            ID
+                    SELECT  ID
                             , NAME
                             , DOSE
                     FROM    [dbo].[GlobalMedList] WITH (READUNCOMMITTED)
                     WHERE   NAME LIKE ?
                     ORDER BY ID
+                    OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY
                     FOR JSON PATH;
                 """    
                 
                 # Retrieve single JSON object
-                result = cursor.execute(qry1, int(limit), name+'%')
+                result = cursor.execute(qry1, name+'%', int(limit))
                 payload = result.fetchone()[0] 
             
                 response = func.HttpResponse(body=payload, 
