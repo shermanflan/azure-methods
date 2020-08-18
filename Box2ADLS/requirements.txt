@@ -1,0 +1,4 @@
+adal
+boxsdk
+#pyodbc
+requests
