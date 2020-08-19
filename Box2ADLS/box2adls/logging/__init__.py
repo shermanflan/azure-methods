@@ -18,3 +18,15 @@ console.setFormatter(formatter)
 
 # add the handler to the root logger
 root_logger.addHandler(console)
+
+# Box logging
+logging.getLogger('boxsdk').setLevel(logging.ERROR)
+
+# ADLS logging
+logging.getLogger('azure.storage').setLevel(logging.ERROR)
+
+# Azure logging
+logging.getLogger('azure.core').setLevel(logging.ERROR)
+
+# Misc logging
+logging.getLogger('urllib3').setLevel(logging.ERROR)

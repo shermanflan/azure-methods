@@ -2,3 +2,6 @@ adal
 boxsdk
 #pyodbc
 requests
+
+--pre
+azure-storage-file-datalake
