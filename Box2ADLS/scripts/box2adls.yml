@@ -1,0 +1,34 @@
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-reference-yaml
+name: fusion-container-group  # Name of the container group
+apiVersion: 2018-10-01
+location: "East US"
+properties: # Properties of container group
+  containers: # Array of container instances in the group
+  - name: box2adls # Name of an instance
+    properties: # Properties of an instance
+      image: [Registry].azurecr.io/box2adls:latest # Container image used to create the instance
+      environmentVariables:
+      - name: BOX_USER_ID
+        secureValue: ""
+      - name: BOX_FOLDER_ID
+        secureValue: ""
+      - name: BOX_FOLDER_PATH
+        value: "data_source_01/folder_1/2020"
+      - name: ADLS_ACCOUNT_NAME
+        value: ""
+      - name: ADLS_ACCOUNT_KEY
+        secureValue: ""
+      - name: ADLS_CONTAINER_NAME
+        value: "box-demo-01"
+      - name: ADLS_FOLDER_PATH
+        value: "fusion/box_downloads"
+      resources: # Resource requirements of the instance
+        requests:
+          memoryInGB: 1.5
+          cpu: 1
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server:
+    username:
+    password: ""
+  restartPolicy: Never
+  osType: Linux

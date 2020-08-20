@@ -1,0 +1,15 @@
+version: "3"
+services:
+  box2adls:
+    image: box2adls
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - BOX_USER_ID=
+      - BOX_FOLDER_ID=
+      - BOX_FOLDER_PATH=data_source_01/folder_1/2020
+      - ADLS_ACCOUNT_NAME=
+      - ADLS_ACCOUNT_KEY=
+      - ADLS_CONTAINER_NAME=box-demo-01
+      - ADLS_FOLDER_PATH=fusion/box_downloads
