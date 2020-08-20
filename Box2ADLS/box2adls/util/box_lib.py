@@ -1,3 +1,5 @@
+from os.path import join
+
 from boxsdk.object.collaboration import CollaborationRole
 
 from box2adls.logging import root_logger as logger
@@ -60,3 +62,28 @@ def navigate(box_folder, folders):
             return navigate(i, folders)
 
     return None
+
+
+def download_files(box_folder, local_dir):
+    """
+    Download all files to target directory.
+
+    :param box_folder: the source folder in Box
+    :param local_dir: the local folder
+    :return: list of downloaded file paths
+    """
+    items = box_folder.get_items()
+    downloads = []
+
+    for i in items:
+
+        if i.type == 'file':
+            download_path = join(local_dir, i.name)
+
+            with open(download_path, 'wb') as f:
+                i.download_to(f)
+                downloads.append(download_path)
+
+            logger.info(f'Downloaded Box file: "{download_path}"')
+
+    return downloads
