@@ -6,28 +6,32 @@ properties: # Properties of container group
   containers: # Array of container instances in the group
   - name: box2adls # Name of an instance
     properties: # Properties of an instance
-      image: [Registry].azurecr.io/box2adls:latest # Container image used to create the instance
+      image: .azurecr.io/box2adls:latest # Container image used to create the instance
       environmentVariables:
       - name: BOX_USER_ID
         secureValue: ""
       - name: BOX_FOLDER_ID
         secureValue: ""
       - name: BOX_FOLDER_PATH
-        value: "data_source_01/folder_1/2020"
+        value: "Utilization Reports/Daily Schedule Status Reports/2020 Reports"
+      - name: BOX_FILE_MASK
+        value: "Branch Scheduled Hours Breakdown_{0}.xlsx"
+      - name: BOX_FILE_OUTNAME
+        value: "Branch Scheduled Hours Breakdown.xlsx"
       - name: ADLS_ACCOUNT_NAME
-        value: ""
+        value: "pahintegrationstorage"
       - name: ADLS_ACCOUNT_KEY
         secureValue: ""
       - name: ADLS_CONTAINER_NAME
-        value: "box-demo-01"
+        value: "enterprisedata"
       - name: ADLS_FOLDER_PATH
-        value: "fusion/box_downloads"
+        value: "Raw/BOX Reports"
       resources: # Resource requirements of the instance
         requests:
           memoryInGB: 1.5
           cpu: 1
   imageRegistryCredentials: # Credentials to pull a private image
-  - server:
+  - server: .azurecr.io
     username:
     password: ""
   restartPolicy: Never

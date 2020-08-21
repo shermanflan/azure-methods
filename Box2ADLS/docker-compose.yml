@@ -8,8 +8,10 @@ services:
     environment:
       - BOX_USER_ID=
       - BOX_FOLDER_ID=
-      - BOX_FOLDER_PATH=data_source_01/folder_1/2020
-      - ADLS_ACCOUNT_NAME=
+      - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/2020 Reports
+      - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_{0}.xlsx
+      - BOX_FILE_OUTNAME=Branch Scheduled Hours Breakdown.xlsx
+      - ADLS_ACCOUNT_NAME=pahintegrationstorage
       - ADLS_ACCOUNT_KEY=
-      - ADLS_CONTAINER_NAME=box-demo-01
-      - ADLS_FOLDER_PATH=fusion/box_downloads
+      - ADLS_CONTAINER_NAME=enterprisedata
+      - ADLS_FOLDER_PATH=Raw/BOX Reports

@@ -5,20 +5,26 @@ from boxsdk.object.collaboration import CollaborationRole
 from box2adls.logging import root_logger as logger
 
 
-def check_or_create_collab(box_folder, box_user):
+def check_or_create_collab(box_user_client, box_service_client, box_folder_id):
     """
     Verify the target folder is accessible by the given user.
     Create collaboration otherwise.
 
-    :param box_folder: the target folder
-    :param box_user: the target user class
+    :param box_user_client: the user client with access to folder
+    :param box_service_client: the service client
+    :param box_folder_id: the target folder root
     :return: The collaboration object
     """
+    service_user = box_service_client.user().get()
+    box_folder = box_user_client.folder(folder_id=box_folder_id).get()
 
-    if not has_collab(box_folder, box_user):
-        logger.info(f"Adding Box collab '{box_user.name}' on '{box_user.name}'...")
+    logger.info(f"Verifying Box collaboration on '{box_folder.name}' " +
+                f"for {service_user.name}")
 
-        return box_folder.collaborate(box_user, CollaborationRole.VIEWER)
+    if not has_collab(box_folder, service_user):
+        logger.info(f"Adding Box collab '{service_user.name}' on '{service_user.name}'...")
+
+        return box_folder.collaborate(service_user, CollaborationRole.VIEWER)
 
 
 def has_collab(box_folder, box_user):
@@ -64,11 +70,13 @@ def navigate(box_folder, folders):
     return None
 
 
-def download_files(box_folder, local_dir):
+def download_file(box_folder, file_mask, file_name, local_dir):
     """
-    Download all files to target directory.
+    Download filtered files to target directory.
 
     :param box_folder: the source folder in Box
+    :param file_mask: file name filter
+    :param file_name: output file name
     :param local_dir: the local folder
     :return: list of downloaded file paths
     """
@@ -77,13 +85,20 @@ def download_files(box_folder, local_dir):
 
     for i in items:
 
-        if i.type == 'file':
-            download_path = join(local_dir, i.name)
+        logger.debug(f'Comparing "{i.name}" and "{file_mask}"')
+
+        if i.type == 'file' and i.name == file_mask:
+            if file_name:
+                download_path = join(local_dir, file_name)
+            else:
+                download_path = join(local_dir, i.name)
 
             with open(download_path, 'wb') as f:
                 i.download_to(f)
                 downloads.append(download_path)
 
             logger.info(f'Downloaded Box file: "{download_path}"')
+
+            break
 
     return downloads

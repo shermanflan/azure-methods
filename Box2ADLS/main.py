@@ -9,15 +9,18 @@ from box2adls.auth.box_jwt import auth_jwt
 from box2adls.logging import root_logger as logger
 from box2adls.util.adls_lib import upload_files
 from box2adls.util.box_lib import (check_or_create_collab, navigate,
-                                   download_files)
+                                   download_file)
 
 
-def box_to_adls(box_client, source, adls_client, adls_root, target):
+def box_to_adls(box_client, source, source_mask, source_rename,
+                adls_client, adls_root, target):
     """
     Routine which copies folders from Box to ADLS.
     
     :param box_client: box client with access to source folder
     :param source: box source path
+    :param source_mask: box file name filter
+    :param source_rename: box output file name
     :param adls_client: ADLS client
     :param adls_root: ADLS container
     :param target: ADLS target path
@@ -37,7 +40,8 @@ def box_to_adls(box_client, source, adls_client, adls_root, target):
 
         logger.info(f'Downloading Box files from "{daily.name}"...')
 
-        local_paths = download_files(box_folder=daily, local_dir=tmp_dir)
+        local_paths = download_file(box_folder=daily, file_mask=source_mask,
+                                    file_name=source_rename, local_dir=tmp_dir)
 
         logger.info(f'Uploading to ADLS "{target}"...')
 
@@ -53,11 +57,8 @@ if __name__ == '__main__':
     adls_account_key = environ.get('ADLS_ACCOUNT_KEY',
                                    '')
     adls_url = f'https://{adls_account_name}.dfs.core.windows.net/'
-    adls_container = environ.get('ADLS_CONTAINER_NAME', 'box-demo-01')
-    adls_path = environ.get('ADLS_FOLDER_PATH', 'fusion/box_downloads')
-
-    daily_folder = date.today().strftime('%d-%B')
-    adls_dir = join(adls_path, daily_folder)
+    adls_container = environ.get('ADLS_CONTAINER_NAME', 'enterprisedata')
+    adls_path = environ.get('ADLS_FOLDER_PATH', 'Raw/BOX Reports')
 
     logger.info("Authenticating to Box API...")
 
@@ -76,12 +77,22 @@ if __name__ == '__main__':
                            box_service_client=box_client_app,
                            box_folder_id=box_folder_id)
 
-    box_dir = join(environ.get('BOX_FOLDER_PATH',
-                               'data_source_01/folder_1/2020'),
-                   f"{daily_folder}")
+    month_folder = date.today().strftime('%m-%B')
+    day_suffix = date.today().strftime('%m_%d_%Y')
 
-    box_to_adls(box_client=box_client_app, source=box_dir,
+    box_dir = join(environ.get('BOX_FOLDER_PATH',
+                               'Utilization Reports/Daily Schedule Status Reports/2020 Reports'),
+                   f"{month_folder}")
+    file_mask = environ.get('BOX_FILE_MASK', 'Branch Scheduled Hours Breakdown_{0}.xlsx')
+
+    logger.debug(f"Box file mask: {file_mask.format(day_suffix)}")
+
+    file_outname = environ.get('BOX_FILE_OUTNAME', 'Branch Scheduled Hours Breakdown.xlsx')
+
+    box_to_adls(box_client=box_client_app,
+                source=box_dir, source_mask=file_mask.format(day_suffix),
+                source_rename=file_outname,
                 adls_client=adls_service, adls_root=adls_container,
-                target=adls_dir)
+                target=adls_path)
 
     logger.info(f"Process complete...")
