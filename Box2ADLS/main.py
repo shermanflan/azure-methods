@@ -1,6 +1,6 @@
 from datetime import date
 from os import environ
-from os.path import join
+from os.path import join, split
 from tempfile import TemporaryDirectory
 
 from azure.storage.filedatalake import DataLakeServiceClient
@@ -23,18 +23,15 @@ def box_to_adls(box_client, source, adls_client, adls_root, target):
     :param target: ADLS target path
     :return: None
     """
-    folders = source.split('/')[-1::-1]
-
-    logger.info(f"Navigating Box folder path '{'/'.join(folders)}'...")
-
     box_root = box_client.folder('0').get()
 
-    logger.debug(f'Box root "{box_root.name}"')
+    logger.info(f"Navigating Box path '{source}' on '{box_root.name}'")
 
+    folders = source.split('/')[-1::-1]
     daily = navigate(box_root, folders)
 
     if not daily:
-        raise Exception(f'Daily folder "{daily}" not found.')
+        raise Exception(f'Daily folder "{split(source)[1]}" not found.')
 
     with TemporaryDirectory() as tmp_dir:
 
