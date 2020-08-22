@@ -30,7 +30,7 @@ RUN pip3 install -r ${APP_HOME}/requirements.txt \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=box_service:box_service ./box2adls ${APP_HOME}/box2adls
-COPY --chown=box_service:box_service ./config ${APP_HOME}/config
+COPY --chown=box_service:box_service ./config/box2adls.yml ${APP_HOME}/config
 COPY --chown=box_service:box_service ./main.py ${APP_HOME}
 
 USER box_service

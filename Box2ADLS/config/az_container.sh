@@ -3,17 +3,17 @@
 declare CONTAINER_GROUP="fusion-container-group"
 declare RESOURCE_GROUP="pahpocdev"
 declare SUBSCRIPTION=""
-declare REGISTRY=""
+declare REGISTRY="PAHIntegrationRegistry"
 declare LOCATION="East US"
 declare IMAGE="box2adls"
 declare ENV_TENANT=""
 declare ENV_CLIENT=""
 declare ENV_RESOURCE=""
 declare ENV_SECRET=""
-declare REGISTRY_URL=""
+declare REGISTRY_URL=".azurecr.io"
 declare REGISTRY_USER=""
 declare REGISTRY_PWD=""
-declare YAML_CONFIG=~/personal/github/azure-methods/Box2ADLS/scripts/box2adls.yml
+declare YAML_CONFIG=~/personal/github/azure-methods/Box2ADLS/config/box2adls.yml
 
 # Create new ACR
 #az acr create --resource-group $RESOURCE_GROUP \
@@ -67,10 +67,10 @@ declare YAML_CONFIG=~/personal/github/azure-methods/Box2ADLS/scripts/box2adls.ym
 #  --verbose
 
 # Start container instance
-az container start -n $CONTAINER_GROUP \
-  --resource-group $RESOURCE_GROUP \
-  --subscription $SUBSCRIPTION \
-  --verbose --debug
+#az container start -n $CONTAINER_GROUP \
+#  --resource-group $RESOURCE_GROUP \
+#  --subscription $SUBSCRIPTION \
+#  --verbose --debug
 
 # Assign security role to a principal.
 #az role assignment create \
