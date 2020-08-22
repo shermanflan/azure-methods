@@ -13,14 +13,14 @@ from box2adls.util.box import check_or_create_collab
 
 if __name__ == '__main__':
 
-    logger.info("Authenticating to Box API...")
+    logger.info("Authenticating to Box...")
 
     # Login as both folder's app user and service user.
     box_client_app = auth_jwt(box_config=join('config', 'box_config.json'))
     box_client_user = auth_jwt(box_config=join('config', 'box_config.json'),
                                user_id=BOX_USER)
 
-    logger.info("Authenticating to ADLS...")
+    logger.info("Authenticating to lake...")
 
     lake_service = DataLakeServiceClient(account_url=LAKE_URL,
                                          credential=LAKE_KEY)

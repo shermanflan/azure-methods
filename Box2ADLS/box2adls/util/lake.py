@@ -33,4 +33,4 @@ def upload_files(lake_client, lake_container, lake_dir, files):
                 fc.append_data(data, offset=0, length=len(data))
                 fc.flush_data(len(data))
 
-                logger.info(f'Uploaded Lake "{lake_dir}/{tail}"...')
+                logger.info(f'Uploaded to lake "{lake_dir}/{tail}"...')

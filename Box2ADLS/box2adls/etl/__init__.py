@@ -37,7 +37,10 @@ def box_to_lake(box_client, source, source_mask, source_rename,
         local_paths = download_file(box_folder=daily, file_mask=source_mask,
                                     file_name=source_rename, local_dir=tmp_dir)
 
-        logger.info(f'Uploading to lake "{target}"...')
+        if local_paths:
+            logger.info(f'Uploading to lake "{target}"...')
 
-        upload_files(lake_client, lake_root, lake_dir=target,
-                     files=local_paths)
+            upload_files(lake_client, lake_root, lake_dir=target,
+                         files=local_paths)
+        else:
+            logger.info(f'No Box files found in "{daily.name}"...')
