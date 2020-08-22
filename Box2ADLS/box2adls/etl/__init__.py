@@ -25,16 +25,16 @@ def box_to_lake(box_client, source, source_mask, source_rename,
     logger.info(f"Navigating Box path '{source}' on '{box_root.name}'")
 
     folders = source.split('/')[-1::-1]
-    daily = navigate(box_root, folders)
+    box_folder = navigate(box_root, folders)
 
-    if not daily:
-        raise Exception(f'Daily folder "{split(source)[1]}" not found.')
+    if not box_folder:
+        raise Exception(f'Box folder "{split(source)[1]}" not found.')
 
     with TemporaryDirectory() as tmp_dir:
 
-        logger.info(f'Downloading Box files from "{daily.name}"...')
+        logger.info(f'Downloading Box files from "{box_folder.name}"...')
 
-        local_paths = download_file(box_folder=daily, file_mask=source_mask,
+        local_paths = download_file(box_folder=box_folder, file_mask=source_mask,
                                     file_name=source_rename, local_dir=tmp_dir)
 
         if local_paths:
@@ -43,4 +43,4 @@ def box_to_lake(box_client, source, source_mask, source_rename,
             upload_files(lake_client, lake_root, lake_dir=target,
                          files=local_paths)
         else:
-            logger.info(f'No Box files found in "{daily.name}"...')
+            logger.info(f'No Box files found in "{box_folder.name}"...')
