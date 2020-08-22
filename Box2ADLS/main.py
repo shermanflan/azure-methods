@@ -13,6 +13,8 @@ from box2adls.util.box import check_or_create_collab
 
 if __name__ == '__main__':
 
+    # TODO: Add Application Insights instrumentation.
+    
     logger.info("Authenticating to Box...")
 
     # Login as both folder's app user and service user.
