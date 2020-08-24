@@ -1,8 +1,9 @@
 # Freeze before deployment
 adal
 boxsdk
-jupyter
+#jupyter
 #numpy
+openpyxl
 #pandas
 #pyodbc
 requests
