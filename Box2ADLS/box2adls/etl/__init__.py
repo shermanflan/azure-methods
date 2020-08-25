@@ -84,7 +84,7 @@ class EtlOperations:
 
     def box_to_lake(self, source, source_mask, source_rename, transform):
         """
-        Routine which copies folders from Box to ADLS.
+        Routine which copies and transforms files from Box to the lake.
 
         :param source: box source path
         :param source_mask: box file name filter
