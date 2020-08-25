@@ -7,17 +7,12 @@ from box2adls.exceptions import XlsxFormatError
 from box2adls.logging import root_logger as logger
 
 
-def transform_daily(prev_month, prev_label, curr_month, curr_label,
-                    next_month, next_label, source):
+def transform_daily(months, labels, source):
     """
     Transform daily Excel file.
 
-    :param prev_month: Name of previous month
-    :param prev_label: New name of previous month tab
-    :param curr_month: Name of current month
-    :param curr_label: New name of current month tab
-    :param next_month: Name of next month
-    :param next_label: New name of next month tab
+    :param months: Names of tabs
+    :param labels: New names of tabs
     :param source: path to file (xlsx)
     :return: None
     """
@@ -25,23 +20,12 @@ def transform_daily(prev_month, prev_label, curr_month, curr_label,
 
     wb = load_workbook(filename=source)
 
-    if prev_month in wb:
-        ws = wb[prev_month]
-        ws.title = prev_label
-    else:
-        raise XlsxFormatError(f"Invalid file format: {split(source)[1]}")
-
-    if curr_month in wb:
-        ws = wb[curr_month]
-        ws.title = curr_label
-    else:
-        raise XlsxFormatError(f"Invalid file format: {split(source)[1]}")
-
-    if next_month in wb:
-        ws = wb[next_month]
-        ws.title = next_label
-    else:
-        raise XlsxFormatError(f"Invalid file format: {split(source)[1]}")
+    for name, label in zip(months, labels):
+        if name in wb:
+            ws = wb[name]
+            ws.title = label
+        else:
+            raise XlsxFormatError(f"Invalid file format: {split(source)[1]}")
 
     wb.save(filename=source)
 

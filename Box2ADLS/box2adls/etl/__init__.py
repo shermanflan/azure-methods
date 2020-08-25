@@ -51,12 +51,10 @@ class EtlOperations:
             next_month = today.replace(month=today.month + 1, day=1)
 
         partial_transform = partial(transform_daily,
-                                    prev_month=prev_month.strftime("%B"),
-                                    prev_label=prev_label,
-                                    curr_month=today.strftime("%B"),
-                                    curr_label=curr_label,
-                                    next_month=next_month.strftime("%B"),
-                                    next_label=next_label)
+                                    months=[prev_month.strftime("%B"),
+                                            today.strftime("%B"),
+                                            next_month.strftime("%B")],
+                                    labels=[prev_label, curr_label, next_label])
 
         self.box_to_lake(source, source_mask, source_rename, partial_transform)
 
