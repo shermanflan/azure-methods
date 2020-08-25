@@ -3,6 +3,7 @@ from functools import partial
 from os.path import split, join
 from tempfile import TemporaryDirectory
 
+from box2adls.exceptions import FolderMissingError
 from box2adls.logging import root_logger as logger
 from box2adls.util import get_last_friday
 from box2adls.util.box import navigate, download_file
@@ -97,23 +98,27 @@ class EtlOperations:
         box_folder = navigate(box_root, folders)
 
         if not box_folder:
-            raise Exception(f'Box folder "{split(source)[1]}" not found.')
+            raise FolderMissingError(f'Box folder "{split(source)[1]}" missing.')
 
         with TemporaryDirectory() as tmp_dir:
 
             logger.info(f'Downloading Box files from "{box_folder.name}"...')
 
-            local_paths = download_file(box_folder=box_folder, file_mask=source_mask,
-                                        file_name=source_rename, local_dir=tmp_dir)
+            local_paths = download_file(box_folder=box_folder,
+                                        file_mask=source_mask,
+                                        file_name=source_rename,
+                                        local_dir=tmp_dir)
 
             if local_paths:
                 for i in local_paths:
-                    logger.info(f'Applying transformation to "{split(i)[1]}"...')
+
+                    logger.info(f'Applying transform to "{split(i)[1]}"...')
+
                     transform(source=i)
 
                 logger.info(f'Uploading to lake "{self.target}"...')
 
-                upload_files(self.lake_client, self.lake_root, lake_dir=self.target,
-                             files=local_paths)
+                upload_files(self.lake_client, self.lake_root,
+                             lake_dir=self.target, files=local_paths)
             else:
                 logger.info(f'No Box files found in "{box_folder.name}"...')
