@@ -5,18 +5,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - 8888:8888
-    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
+#    ports:
+#      - 8888:8888
+#    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
     environment:
       - BOX_USER_ID=
       - BOX_FOLDER_ID=
-      - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/2020 Reports
+      - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/{0} Reports
+      - BOX_FOLDER_PATH2=Utilization Reports/Weekly Utilization Reports/{0} Reports
       - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_{0}.xlsx
+      - BOX_FILE_MASK2=Telephony Usage By Branch {0}.xlsx
       - BOX_FILE_RENAME=Branch Scheduled Hours Breakdown.xlsx
+      - WS_PREV_NAME=PreviousMonth
+      - WS_CURR_NAME=CurrentMonth
+      - WS_NEXT_NAME=NextMonth
+      - BOX_FILE_RENAME2=Telephony Usage By Branch.xlsx
+      - WS_HIDDEN_NAME={0} Tele Stats
+      - WS_HIDDEN_RENAME=Tele Stats
       - LAKE_ACCOUNT_NAME=
       - LAKE_ACCOUNT_KEY=
-      - LAKE_CONTAINER_NAME=enterprisedata
+      - LAKE_CONTAINER_NAME=
       - LAKE_FOLDER_PATH=Raw/BOX Reports
     volumes:
       - ./jupyter:/opt/box_service/local
