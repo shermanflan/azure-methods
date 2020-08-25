@@ -74,8 +74,7 @@ class EtlOperations:
         """
         today = date.today()
         last_friday = get_last_friday(today)
-        week_mask1 = date.strftime(last_friday, '%B - %d')
-        source_week = join(source, week_mask1)
+        source_week = join(source, last_friday.strftime("%B - %d"))
 
         partial_transform = partial(transform_weekly, tab_name, tab_rename)
 
