@@ -53,7 +53,7 @@ class EtlOperations:
         partial_transform = partial(transform_daily,
                                     prev_month=prev_month.strftime("%B"),
                                     prev_label=prev_label,
-                                    curr_month=date.strftime(today, '%B'),
+                                    curr_month=today.strftime("%B"),
                                     curr_label=curr_label,
                                     next_month=next_month.strftime("%B"),
                                     next_label=next_label)
@@ -77,8 +77,7 @@ class EtlOperations:
         week_mask1 = date.strftime(last_friday, '%B - %d')
         source_week = join(source, week_mask1)
 
-        partial_transform = partial(transform_weekly, tab_name=tab_name,
-                                    tab_rename=tab_rename)
+        partial_transform = partial(transform_weekly, tab_name, tab_rename)
 
         self.box_to_lake(source_week, source_mask, source_rename,
                          partial_transform)
