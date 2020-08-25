@@ -37,9 +37,8 @@ def daily_pull(box_client, source, source_mask, source_rename,
         next_month = today.replace(year=today.year + 1, month=1)
     else:
         next_month = today.replace(month=today.month + 1, day=1)
-    next_month = next_month.strftime("%B")
 
-    logger.debug(f'prev: {prev_month}, curr: {curr_month}, next: {next_month}')
+    next_month = next_month.strftime("%B")
 
     partial_transform = partial(transform_daily,
                                 prev_month=prev_month, prev_label=prev_label,
@@ -71,9 +70,6 @@ def weekly_pull(box_client, source, source_mask, source_rename,
     last_friday = get_last_friday(today)
     week_mask1 = date.strftime(last_friday, '%B - %d')
     source_week = join(source, week_mask1)
-    logger.debug(f'Last Friday: {last_friday}')
-    logger.debug(f'Last Friday: {week_mask1}')
-    logger.debug(f'Full path: {source_week}')
 
     partial_transform = partial(transform_weekly, tab_name=tab_name,
                                 tab_rename=tab_rename)

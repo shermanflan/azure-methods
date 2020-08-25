@@ -1,4 +1,4 @@
-# Freeze before deployment
+# TODO: Freeze before deployment
 adal
 boxsdk
 #jupyter

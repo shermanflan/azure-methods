@@ -21,8 +21,7 @@ def transform_daily(prev_month, prev_label, curr_month, curr_label,
     :param source: path to file (xlsx)
     :return: None
     """
-    logger.debug(f'Month names: {prev_month}, {curr_month}, {next_month}')
-    logger.debug(f'Source: {source}')
+    logger.info(f'Renaming worksheet tabs for {split(source)[1]}')
 
     wb = load_workbook(filename=source)
 
@@ -56,8 +55,7 @@ def transform_weekly(tab_name, tab_rename, source):
     :param source: path to file (xlsx)
     :return: None
     """
-    logger.debug(f'Hidden tab: {tab_name}')
-    logger.debug(f'Source: {source}')
+    logger.info(f'Enabling worksheet for {split(source)[1]}')
 
     wb = load_workbook(filename=source)
 
