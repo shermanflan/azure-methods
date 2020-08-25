@@ -43,23 +43,19 @@ class EtlOperations:
         :return: None
         """
         today = date.today()
-        curr_month = date.strftime(today, '%B')
         prev_month = today.replace(day=1) - timedelta(days=1)
-        prev_month = prev_month.strftime("%B")
 
         if today.month == 12:
             next_month = today.replace(year=today.year + 1, month=1)
         else:
             next_month = today.replace(month=today.month + 1, day=1)
 
-        next_month = next_month.strftime("%B")
-
         partial_transform = partial(transform_daily,
-                                    prev_month=prev_month,
+                                    prev_month=prev_month.strftime("%B"),
                                     prev_label=prev_label,
-                                    curr_month=curr_month,
+                                    curr_month=date.strftime(today, '%B'),
                                     curr_label=curr_label,
-                                    next_month=next_month,
+                                    next_month=next_month.strftime("%B"),
                                     next_label=next_label)
 
         self.box_to_lake(source, source_mask, source_rename, partial_transform)
