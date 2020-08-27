@@ -1,9 +1,12 @@
+import logging
 from os.path import split
 
 from azure.core.exceptions import (ResourceNotFoundError,
                                    ResourceExistsError)
 
-from box2adls.logging import root_logger as logger
+import box2adls.logging
+
+logger = logging.getLogger(__name__)
 
 
 def upload_files(lake_client, lake_container, lake_dir, files):

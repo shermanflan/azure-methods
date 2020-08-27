@@ -1,10 +1,14 @@
+import logging
 from os.path import split
 
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from box2adls.exceptions import XlsxFormatError
-from box2adls.logging import root_logger as logger
+import box2adls.logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def transform_daily(months, labels, source):

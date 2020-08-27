@@ -1,14 +1,18 @@
 from datetime import date, timedelta
 from functools import partial
+import logging
 from os.path import split, join
 from tempfile import TemporaryDirectory
 
 from box2adls.exceptions import FolderMissingError
-from box2adls.logging import root_logger as logger
+import box2adls.logging
 from box2adls.util import get_last_friday
 from box2adls.util.box import navigate, download_file
 from box2adls.util.lake import upload_files
 from box2adls.util.xlsx import transform_daily, transform_weekly
+
+
+logger = logging.getLogger(__name__)
 
 
 class EtlOperations:

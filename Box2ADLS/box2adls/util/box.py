@@ -1,8 +1,12 @@
+import logging
 from os.path import join
 
 from boxsdk.object.collaboration import CollaborationRole
 
-from box2adls.logging import root_logger as logger
+import box2adls.logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_or_create_collab(box_user_client, box_service_client, box_folder_id):

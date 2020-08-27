@@ -1,10 +1,11 @@
+import logging
 from os.path import join
 
 from azure.storage.filedatalake import DataLakeServiceClient
 
 from box2adls.auth.box_jwt import auth_jwt
 from box2adls.etl import EtlOperations
-from box2adls.logging import root_logger as logger
+import box2adls.logging
 from box2adls import (BOX_USER, BOX_FOLDER,
                       BOX_PATH, BOX_PATH2,
                       BOX_MASK, BOX_MASK2,
@@ -17,9 +18,9 @@ from box2adls import (BOX_USER, BOX_FOLDER,
 from box2adls.util.box import check_or_create_collab
 
 
-if __name__ == '__main__':
+logger = logging.getLogger(__name__)
 
-    # TODO: Add Application Insights instrumentation.
+if __name__ == '__main__':
 
     logger.info("Authenticating to Box...")
 
