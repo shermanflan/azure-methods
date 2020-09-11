@@ -10,6 +10,7 @@ from graph_api.auth import OAuthFactory
 from graph_api.api.blob import BlobFactory
 from graph_api.api.graph import get_users, get_delta_link
 from graph_api.api.lake import LakeFactory
+from graph_api.util import load_from_path
 import graph_api.util.log
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ if __name__ == '__main__':
             LakeFactory().upload_files(lake_container=LAKE_CONTAINER,
                                        lake_dir=LAKE_PATH, files=[user_file])
 
-            logger.info(f'Syncing from now so getting next delta link.')
+            logger.info(f'Syncing from now so getting baseline delta link.')
 
             delta_link = get_delta_link(token=graph_token)
 
@@ -84,13 +85,11 @@ if __name__ == '__main__':
         else:
             logger.info(f'Retrieving users delta from Graph.')
 
-            with open(save_point_path, "rb") as file:
+            delta_link = load_from_path(save_point_path)
 
-                delta_link = json.load(file)
+            assert delta_link and '@odata.deltaLink' in delta_link, \
+                "Unknown error: delta link not found."
 
-                assert delta_link and '@odata.deltaLink' in delta_link, \
-                    "Unknown error: delta link not found."
-
-                logger.debug(f"Delta link: {delta_link['@odata.deltaLink']}")
+            logger.debug(f"Delta link: {delta_link['@odata.deltaLink']}")
 
     logger.info(f'Completed successfully...')
