@@ -4,7 +4,7 @@ from threading import Lock
 import msal
 
 from graph_api import (AAD_ENDPOINT, APP_ID, APP_SECRET)
-import graph_api.logging
+import graph_api.util.log
 
 logger = logging.getLogger(__name__)
 

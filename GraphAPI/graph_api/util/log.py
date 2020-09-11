@@ -2,8 +2,8 @@ import logging
 
 
 # Equivalent to:
-# logging.basicConfig(format='%(asctime)s %(levelname)s [%(name)s]: %(message)s',
-#                     datefmt='%Y-%m-%d %I:%M:%S %p', level=logging.INFO)
+# util.basicConfig(format='%(asctime)s %(levelname)s [%(name)s]: %(message)s',
+#                     datefmt='%Y-%m-%d %I:%M:%S %p', level=util.INFO)
 root_logger = logging.getLogger(name=None)
 root_logger.setLevel(logging.DEBUG)
 

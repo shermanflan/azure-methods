@@ -2,12 +2,13 @@ import csv
 from datetime import datetime
 import logging
 from os.path import join
+from threading import Lock
 
 import requests
 from requests.exceptions import HTTPError
 
 from graph_api import GRAPH_API_ENDPOINT
-import graph_api.logging
+import graph_api.util.log
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,6 @@ def get_users(token, tmp_root, limit=250):
         users = requests.get(uri, headers=headers, params=params)
         users.raise_for_status()
 
-        # logger.debug(f"Graph API call result: {json.dumps(payload, indent=2)}")
         file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
         tmp_path = join(tmp_root, f"user_delta-{file_stamp}.csv")
 
@@ -105,3 +105,44 @@ def get_next_users(uri, headers):
             break
 
     return None
+
+
+def get_delta_link(token):
+    """
+    Establishes the "sync from now" checkpoint and retrieves the first
+    delta link.
+
+    :param token:
+    :return: the Dict containing first users delta link.
+    """
+    # Calling graph using the access token
+    uri = f"{GRAPH_API_ENDPOINT}/users/delta"
+    headers = {'Authorization': f"Bearer {token}"}
+    params = {
+        '$deltaToken': "latest",
+        '$select': 'id,displayName,givenName,surname,userPrincipalName,' +
+                   'jobTitle,companyName,department,officeLocation,' +
+                   'employeeId,mail,onPremisesDomainName,createdDateTime'
+    }
+
+    try:
+        delta = requests.get(uri, headers=headers, params=params)
+        delta.raise_for_status()
+
+        delta_link = delta.json()
+
+        if '@odata.deltaLink' in delta_link:
+            return delta_link
+        else:
+            raise Exception(f"Unknown error status: could not get delta link.")
+
+    except HTTPError as e:
+        logger.debug(f'Response Code: {delta.status_code}')
+        logger.exception(e)
+
+        raise
+
+
+def get_next_delta(token):
+    # TODO: get list of user ids, then collect from REST.
+    pass

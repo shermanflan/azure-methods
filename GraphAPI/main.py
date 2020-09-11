@@ -1,13 +1,16 @@
 import asyncio
+from datetime import datetime
 import logging
+import json
 from tempfile import TemporaryDirectory
 
-from graph_api import GRAPH_API_SCOPES, LAKE_CONTAINER, LAKE_PATH
+from graph_api import (GRAPH_API_SCOPES, BLOB_CONTAINER, BLOB_PATH,
+                       LAKE_CONTAINER, LAKE_PATH)
 from graph_api.auth import OAuthFactory
-from graph_api.api.blob import upload_blob, upload_blob_async
-from graph_api.api.graph import get_users
+from graph_api.api.blob import BlobFactory
+from graph_api.api.graph import get_users, get_delta_link
 from graph_api.api.lake import LakeFactory
-import graph_api.logging
+import graph_api.util.log
 
 logger = logging.getLogger(__name__)
 
@@ -42,22 +45,52 @@ if __name__ == '__main__':
     #   when reporting issues in Stack Overflow or to Microsoft Support.
     # Handle any other retry-able errors:
     #   https://docs.microsoft.com/en-us/graph/errors
+
     with TemporaryDirectory() as tmp_dir:
 
-        logger.info(f'Retrieving users snapshot from Graph.')
+        save_point_path = BlobFactory().get_blob_to_file(container=BLOB_CONTAINER,
+                                                         blob_path=BLOB_PATH,
+                                                         tmp_dir=tmp_dir)
 
-        user_file = get_users(token=OAuthFactory().get_token(GRAPH_API_SCOPES),
-                              tmp_root=tmp_dir)
+        graph_token = OAuthFactory().get_token(GRAPH_API_SCOPES)
 
-        logger.info(f'Uploading users snapshot to lake.')
+        if not save_point_path:
 
-        LakeFactory().upload_files(lake_container=LAKE_CONTAINER,
-                                   lake_dir=LAKE_PATH, files=[user_file])
+            logger.info(f'Retrieving users snapshot from Graph.')
 
-        upload_blob(file=user_file)
-        # try:
-        #     asyncio.run(upload_blob_async(file=user_file))
-        # except TypeError as e:
-        #     logger.debug("Ignoring type error in await.")
+            user_file = get_users(token=graph_token, tmp_root=tmp_dir)
+
+            logger.info(f'Uploading users snapshot to lake.')
+
+            LakeFactory().upload_files(lake_container=LAKE_CONTAINER,
+                                       lake_dir=LAKE_PATH, files=[user_file])
+
+            logger.info(f'Syncing from now so getting next delta link.')
+
+            delta_link = get_delta_link(token=graph_token)
+
+            delta_link.update({
+                'saved_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+            })
+
+            BlobFactory().upload(container=BLOB_CONTAINER, blob_path=BLOB_PATH,
+                                 source=json.dumps(delta_link, indent=4))
+
+            # try:
+            #     asyncio.run(upload_blob_async(file=user_file))
+            # except TypeError as e:
+            #     logger.debug("Ignoring type error in await.")
+
+        else:
+            logger.info(f'Retrieving users delta from Graph.')
+
+            with open(save_point_path, "rb") as file:
+
+                delta_link = json.load(file)
+
+                assert delta_link and '@odata.deltaLink' in delta_link, \
+                    "Unknown error: delta link not found."
+
+                logger.debug(f"Delta link: {delta_link['@odata.deltaLink']}")
 
     logger.info(f'Completed successfully...')
