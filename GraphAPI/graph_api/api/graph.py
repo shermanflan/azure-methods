@@ -1,4 +1,7 @@
+import csv
+from datetime import datetime
 import logging
+from os.path import join
 
 import requests
 from requests.exceptions import HTTPError
@@ -11,13 +14,14 @@ logger = logging.getLogger(__name__)
 _DEBUG = True  # temp
 
 
-def get_using_requests(token, limit=250,):
+def get_users(token, tmp_root, limit=250):
     """
-    Example using native REST libraries.
+    Get initial user snapshot using REST and save to CSV.
 
     :param token:
+    :param tmp_root:
     :param limit:
-    :return: None
+    :return: full path to saved flat file
     """
 
     # Calling graph using the access token
@@ -34,20 +38,37 @@ def get_using_requests(token, limit=250,):
         users = requests.get(uri, headers=headers, params=params)
         users.raise_for_status()
 
-        data = users.json()
-        count = len(data['value'])  # limit
-
         # logger.debug(f"Graph API call result: {json.dumps(payload, indent=2)}")
+        file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
+        tmp_path = join(tmp_root, f"user_delta-{file_stamp}.csv")
 
-        if '@odata.nextLink' in data:
-            uri = data['@odata.nextLink']
+        with open(tmp_path, 'w', newline='') as csv_file:
 
-            for data in get_next_users(uri, headers):
-                count += len(data['value'])  # limit
-                logger.debug(f'Retrieved: {count}')
-                # sleep(1)
+            data = users.json()
+            count = len(data['value'])  # limit
+
+            if not count:
+                logger.info('No user data found.')
+                return
+
+            fields = data['value'][0].keys()
+            writer = csv.DictWriter(csv_file, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(data['value'])
+
+            if '@odata.nextLink' in data:
+                uri = data['@odata.nextLink']
+
+                for data in get_next_users(uri, headers):
+
+                    count += len(data['value'])  # limit
+                    logger.debug(f'Retrieved: {count}')
+
+                    writer.writerows(data['value'])
 
         logger.debug(f'Reached end of users request.')
+
+        return tmp_path
 
     except HTTPError as e:
         logger.debug(f'Response Code: {users.status_code}')
@@ -64,7 +85,7 @@ def get_next_users(uri, headers):
     :param headers:
     :return: response payload as Dict
     """
-    times = 4
+    times = 4  # tmp
 
     while True:
 
@@ -80,7 +101,7 @@ def get_next_users(uri, headers):
 
         times -= 1
 
-        if _DEBUG and not times:
+        if _DEBUG and not times:  # tmp
             break
 
     return None
