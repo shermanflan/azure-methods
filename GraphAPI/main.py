@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     with TemporaryDirectory() as tmp_dir:
 
-        save_point_path = BlobFactory().get_blob_to_file(container=BLOB_CONTAINER,
+        save_point_path = BlobFactory().download_to_file(container=BLOB_CONTAINER,
                                                          blob_path=BLOB_PATH,
                                                          tmp_dir=tmp_dir)
 

@@ -49,7 +49,7 @@ class BlobFactory(object):
     def __remove_connection(self):
         self.__connection = None
 
-    def get_blob_to_file(self, container, blob_path, tmp_dir):
+    def download_to_file(self, container, blob_path, tmp_dir):
         """
         TODO:
         - Write a streaming version.
