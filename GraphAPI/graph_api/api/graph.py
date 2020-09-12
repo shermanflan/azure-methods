@@ -42,7 +42,7 @@ def get_users(token, tmp_root, limit=250):
 
     with open(tmp_path, 'w', newline='') as csv_file:
 
-        count = len(data['value'])  # limit
+        count = len(data['value'])
 
         if not count:
             logger.info('No user data found.')
@@ -78,7 +78,6 @@ def _get_next_users(session, uri, headers):
     :param headers:
     :return: response payload as Dict
     """
-
     try:
         users = session.get(uri, headers=headers)
         users.raise_for_status()
@@ -103,7 +102,6 @@ def get_delta_link(token):
     :param token:
     :return: the Dict containing first users delta link.
     """
-    # Calling graph using the access token
     uri = f"{GRAPH_API_ENDPOINT}/users/delta"
     headers = {'Authorization': f"Bearer {token}"}
     params = {
@@ -184,8 +182,7 @@ def get_delta_list(token, delta_link):
 
 def _get_next_delta(session, uri, headers):
     """
-    TODO:
-    Find a way to reuse the request connection for efficiency.
+    Reuses the request connection via shared Session for efficiency.
 
     :param session
     :param uri:
