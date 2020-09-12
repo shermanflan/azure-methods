@@ -86,6 +86,7 @@ class BlobFactory(object):
         Async version.
 
         TODO: Need to understand asyncio
+        - https://docs.python.org/3/library/asyncio.html
         - https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/storage/azure-storage-blob/samples/blob_samples_hello_world_async.py
         - https://stackoverflow.com/questions/33357233/when-to-use-and-when-not-to-use-python-3-5-await/33399896#33399896
 
@@ -96,19 +97,19 @@ class BlobFactory(object):
         """
         service = self.__get_connection()
 
-        # async with service:
+        async with service:
 
-        container_client = service.get_container_client(container=container)
+            container_client = service.get_container_client(container=container)
 
-        try:
-            await container_client.create_container()
-        except ResourceExistsError as e:
-            logger.debug(f'Container exists.')
+            try:
+                await container_client.create_container()
+            except ResourceExistsError as e:
+                logger.debug(f'Container exists.')
 
-        blob_client = container_client.get_blob_client(blob=blob_path)
+            blob_client = container_client.get_blob_client(blob=blob_path)
 
-        with open(file, "rb") as data:
-            await blob_client.upload_blob(data, overwrite=True)
+            with open(file, "rb") as data:
+                await blob_client.upload_blob(data, overwrite=True)
 
     def upload_from_path(self, container, blob_path, file_path):
         """

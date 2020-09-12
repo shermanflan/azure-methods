@@ -18,3 +18,6 @@ console.setFormatter(formatter)
 
 # add the handler to the root logger
 root_logger.addHandler(console)
+
+# Quiet chatty libs
+logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)

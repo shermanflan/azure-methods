@@ -2,115 +2,103 @@ import csv
 from datetime import datetime
 import logging
 from os.path import join
-from threading import Lock
 
 import requests
 from requests.exceptions import HTTPError
 
-from graph_api import GRAPH_API_ENDPOINT
+from graph_api import GRAPH_API_ENDPOINT, GRAPH_META
 import graph_api.util.log
 
 logger = logging.getLogger(__name__)
 
-_DEBUG = True  # temp
-
 
 def get_users(token, tmp_root, limit=250):
     """
-    Get initial user snapshot using REST and save to CSV.
+    Get initial user snapshot using REST and save to CSV. Uses
+    session to promote connection reuse.
 
     :param token:
     :param tmp_root:
     :param limit:
     :return: full path to saved flat file
     """
-
-    # Calling graph using the access token
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
-    params = {
-        '$top': f"{limit}",
-        '$select': 'id,displayName,givenName,surname,userPrincipalName,' +
-                   'jobTitle,companyName,department,officeLocation,' +
-                   'employeeId,mail,onPremisesDomainName,createdDateTime'
-    }
+    params = {'$top': f"{limit}", '$select': GRAPH_META}
 
     try:
-        users = requests.get(uri, headers=headers, params=params)
+        session = requests.Session()
+        users = session.get(uri, headers=headers, params=params)
         users.raise_for_status()
-
-        file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
-        tmp_path = join(tmp_root, f"user_delta-{file_stamp}.csv")
-
-        with open(tmp_path, 'w', newline='') as csv_file:
-
-            data = users.json()
-            count = len(data['value'])  # limit
-
-            if not count:
-                logger.info('No user data found.')
-                return
-
-            fields = data['value'][0].keys()
-            writer = csv.DictWriter(csv_file, fieldnames=fields)
-            writer.writeheader()
-            writer.writerows(data['value'])
-
-            if '@odata.nextLink' in data:
-                uri = data['@odata.nextLink']
-
-                for data in get_next_users(uri, headers):
-
-                    count += len(data['value'])  # limit
-                    logger.debug(f'Retrieved: {count}')
-
-                    writer.writerows(data['value'])
-
-        logger.debug(f'Reached end of users request.')
-
-        return tmp_path
-
+        data = users.json()
     except HTTPError as e:
-        logger.debug(f'Response Code: {users.status_code}')
+        logger.error(f'Initial response Code: {users.status_code}')
         logger.exception(e)
 
         raise
 
+    file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
+    tmp_path = join(tmp_root, f"{file_stamp}-user_snapshot.csv")
 
-def get_next_users(uri, headers):
+    with open(tmp_path, 'w', newline='') as csv_file:
+
+        count = len(data['value'])  # limit
+
+        if not count:
+            logger.info('No user data found.')
+            return
+
+        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
+        writer.writeheader()
+        writer.writerows(data['value'])
+
+        while True:
+
+            if '@odata.nextLink' in data:
+                uri = data['@odata.nextLink']
+                data = _get_next_users(session, uri, headers)
+
+                count += len(data['value'])
+
+                writer.writerows(data['value'])
+
+                logger.debug(f'{count} snapshot rows written.')
+            else:
+                break
+
+    return tmp_path
+
+
+def _get_next_users(session, uri, headers):
     """
-    TODO: Will iterator play nice with tenacity?
+    Reuses the request connection for efficiency.
 
+    :param session:
     :param uri:
     :param headers:
     :return: response payload as Dict
     """
-    times = 4  # tmp
 
-    while True:
-
-        users = requests.get(uri, headers=headers)
+    try:
+        users = session.get(uri, headers=headers)
         users.raise_for_status()
-        data = users.json()
-        yield data
 
-        if '@odata.nextLink' in data:
-            uri = data['@odata.nextLink']
-        else:
-            break
+        return users.json()
+    except HTTPError as e:
+        logger.error(f'Delta response Code: {users.status_code}')
+        logger.exception(e)
 
-        times -= 1
-
-        if _DEBUG and not times:  # tmp
-            break
-
-    return None
+        raise
 
 
 def get_delta_link(token):
     """
     Establishes the "sync from now" checkpoint and retrieves the first
     delta link.
+
+    Uses change tracking for delta updates to users after initial sync.
+    See:
+    - https://docs.microsoft.com/en-us/graph/delta-query-users
 
     :param token:
     :return: the Dict containing first users delta link.
@@ -120,9 +108,7 @@ def get_delta_link(token):
     headers = {'Authorization': f"Bearer {token}"}
     params = {
         '$deltaToken': "latest",
-        '$select': 'id,displayName,givenName,surname,userPrincipalName,' +
-                   'jobTitle,companyName,department,officeLocation,' +
-                   'employeeId,mail,onPremisesDomainName,createdDateTime'
+        '$select': GRAPH_META
     }
 
     try:
@@ -143,6 +129,127 @@ def get_delta_link(token):
         raise
 
 
-def get_next_delta(token):
-    # TODO: get list of user ids, then collect from REST.
-    pass
+def get_delta_list(token, delta_link):
+    """
+    Get delta of users since last delta link (id's only).
+
+    Uses change tracking for delta updates to users after initial sync.
+    See:
+    - https://docs.microsoft.com/en-us/graph/delta-query-users
+
+    :param token:
+    :param delta_link:
+    :return: List of user ids.
+    """
+    headers = {'Authorization': f"Bearer {token}"}
+
+    try:
+        session = requests.Session()
+        users = session.get(delta_link, headers=headers)
+        users.raise_for_status()
+        data = users.json()
+    except HTTPError as e:
+        logger.error(f'Initial response Code: {users.status_code}')
+        logger.exception(e)
+
+        raise
+
+    count = len(data['value'])
+
+    if not count:
+        logger.info('No user deltas exist.')
+        return None, []
+
+    user_ids = [u['id'] for u in data['value']]
+
+    while True:
+
+        if '@odata.nextLink' in data:
+            uri = data['@odata.nextLink']
+            data = _get_next_delta(session, uri, headers)
+
+            user_ids.extend([u['id'] for u in data['value']])
+
+        elif '@odata.deltaLink' in data:
+
+            logger.info(f'Collected {len(user_ids)} users, getting next delta link.')
+            del data['value']
+
+            return data, user_ids
+        else:
+            break
+
+    raise Exception(f'Unknown error condition, no next or delta link.')
+
+
+def _get_next_delta(session, uri, headers):
+    """
+    TODO:
+    Find a way to reuse the request connection for efficiency.
+
+    :param session
+    :param uri:
+    :param headers:
+    :return: response payload as Dict
+    """
+
+    try:
+        users = session.get(uri, headers=headers)
+        users.raise_for_status()
+        data = users.json()
+
+        if '@odata.nextLink' in data or '@odata.deltaLink' in data:
+            return data
+
+    except HTTPError as e:
+        logger.error(f'Delta response Code: {users.status_code}')
+        logger.exception(e)
+
+        raise
+
+    raise Exception(f'Unknown error condition, no next or delta link.')
+
+
+def get_delta(token, user_list, tmp_root):
+    """
+    Get list users as specified in given list of ids.
+
+    Uses change tracking for delta updates to users after initial sync.
+    See:
+    - https://docs.microsoft.com/en-us/graph/delta-query-users
+
+    :param token:
+    :param user_list:
+    :param tmp_root:
+    :return:
+    """
+    file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
+    tmp_path = join(tmp_root, f"{file_stamp}-user_delta.csv")
+
+    with open(tmp_path, 'w', newline='') as csv_file:
+
+        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
+        writer.writeheader()
+
+        headers = {'Authorization': f"Bearer {token}"}
+        params = {'$select': GRAPH_META}
+        session = requests.Session()
+
+        for u in user_list:
+            uri = f"{GRAPH_API_ENDPOINT}/users/{u}"
+
+            try:
+                user_list = session.get(uri, headers=headers, params=params)
+                user_list.raise_for_status()
+                data = user_list.json()
+
+                if data:
+                    del data['@odata.context']
+                    writer.writerow(data)
+            except HTTPError as e:
+                logger.error(f'Initial response Code: {user_list.status_code}')
+                logger.exception(e)
+
+                raise
+
+        return tmp_path
