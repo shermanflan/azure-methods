@@ -26,8 +26,6 @@ class EtlOperations:
         :param tmp_dir:
         :return: None
         """
-        logger.info(f'Retrieving user snapshot from Graph.')
-
         user_file = get_users(token=self.token, tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
 
         logger.info(f'Uploading user snapshot to lake.')
@@ -50,8 +48,6 @@ class EtlOperations:
         :param tmp_dir:
         :return: None
         """
-        logger.info(f'Retrieving user delta from Graph.')
-
         delta_link = load_from_path(save_point_path)
 
         assert delta_link and '@odata.deltaLink' in delta_link, \

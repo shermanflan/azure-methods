@@ -43,8 +43,12 @@ if __name__ == '__main__':
         ops = EtlOperations()
 
         if not save_point_path:
+            logger.info(f'Retrieving user snapshot from Graph.')
+
             ops.load_snapshot(tmp_dir)
         else:
+            logger.info(f'Retrieving user delta from Graph.')
+
             ops.load_delta(save_point_path, tmp_dir)
 
     logger.info(f'Completed successfully...')
