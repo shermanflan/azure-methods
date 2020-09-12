@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
 
     # TODO
-    # Consider flat file output to parquet
     # Consider writing success/failure to Teams
     # Incorporate Key Vault, Application Insights
     # Create postman collection and add to git
@@ -23,16 +22,6 @@ if __name__ == '__main__':
     #   https://docs.microsoft.com/en-us/azure/architecture/patterns/throttling
     # Handle server busy: HTTP 503/504, use exponential backoff
     # Handle bandwidth exceeded: HTTP 509, fatal
-
-    # Generate a unique GUID and send it on each Microsoft Graph REST request.
-    #   This will help Microsoft investigate any errors more easily if you need
-    #   to report an issue with Microsoft Graph.
-    #   On every request to Microsoft Graph, generate a unique GUID, send it in
-    #   the client-request-id HTTP request header, and also log it in your
-    #   application's logs.
-    #   Always log the request-id, timestamp and x-ms-ags-diagnostic from the HTTP
-    #   response headers. These, together with the client-request-id, are required
-    #   when reporting issues in Stack Overflow or to Microsoft Support.
 
     with TemporaryDirectory() as tmp_dir:
 
