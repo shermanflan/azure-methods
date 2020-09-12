@@ -1,0 +1,21 @@
+version: "3"
+services:
+  graph2lake:
+    image: graph2lake
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AAD_TENANT_ID=
+      - APP_ID=
+      - APP_SECRET=
+      - GRAPH_API_SCOPES=https://graph.microsoft.com/.default
+      - GRAPH_API_ENDPOINT=https://graph.microsoft.com/v1.0
+      - GRAPH_META=id,displayName,givenName,surname,userPrincipalName,jobTitle,companyName,department,officeLocation,employeeId,mail,onPremisesDomainName,createdDateTime
+      - GRAPH_PAGE_SIZE=250
+      - STORE_ACCOUNT_NAME=
+      - STORE_ACCOUNT_KEY=
+      - BLOB_CONTAINER_NAME=python-app-data
+      - BLOB_PATH=graph-api/next_delta.json
+      - LAKE_CONTAINER_NAME=enterprisedata
+      - LAKE_FOLDER_PATH=Raw/Graph Deltas

@@ -1,6 +1,8 @@
 azure-storage-blob
 msal
+pytest
 requests
+tenacity
 
 --pre
 azure-storage-file-datalake

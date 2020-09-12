@@ -26,6 +26,7 @@ class EtlOperations:
         :param tmp_dir:
         :return: None
         """
+        # TODO: Do retry here imperatively.
         user_file = get_users(token=self.token, tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
 
         logger.info(f'Uploading user snapshot to lake.')
@@ -55,12 +56,14 @@ class EtlOperations:
 
         logger.info(f'Retrieving user delta (ids only) from Graph.')
 
+        # TODO: Do retry here imperatively.
         delta_link, ids = get_delta_list(token=self.token,
                                          delta_link=delta_link['@odata.deltaLink'])
 
         if delta_link and ids:
             logger.info(f'Retrieving user delta from Graph.')
 
+            # TODO: Do retry here imperatively.
             user_file = get_delta(token=self.token, user_list=ids, tmp_root=tmp_dir)
 
             logger.info(f'Uploading user delta to lake.')

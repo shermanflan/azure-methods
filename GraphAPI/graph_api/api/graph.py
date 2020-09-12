@@ -12,6 +12,19 @@ import graph_api.util.log
 logger = logging.getLogger(__name__)
 
 
+# Simple retry example:
+#   https://github.com/microsoftgraph/msgraph-sdk-python-core/blob/dev/msgraphcore/middleware/authorization.py
+# def send(self, request, **kwargs):
+#     request.headers.update({'Authorization': 'Bearer {}'.format(self._get_access_token())})
+#     response = super().send(request, **kwargs)
+#
+#     # Token might have expired just before transmission, retry the request one more time
+#     if response.status_code == 401 and self.retry_count < 2:
+#         self.retry_count += 1
+#         return self.send(request, **kwargs)
+#     return response
+
+
 def get_users(token, tmp_root, limit=250):
     """
     Get initial user snapshot using REST and save to CSV. Uses
@@ -88,6 +101,15 @@ def _get_next_users(session, uri, headers):
         logger.exception(e)
 
         raise
+
+# Simple generator example from:
+# https://github.com/microsoftgraph/python-sample-pagination/blob/master/generator.py
+# def graph_generator(session, endpoint=None):
+#     while endpoint:
+#         print('Retrieving next page ...')
+#         response = session.get(endpoint).json()
+#         yield from response.get('value')
+#         endpoint = response.get('@odata.nextLink')
 
 
 def get_delta_link(token):
@@ -243,6 +265,11 @@ def get_delta(token, user_list, tmp_root):
                     writer.writerow(data)
             except HTTPError as e:
                 logger.error(f'Initial response Code: {user_list.status_code}')
+
+                if user_list.status_code == 404:
+                    logger.error(f'User {u} not found. Skipping...')
+                    continue
+
                 logger.exception(e)
 
                 raise
