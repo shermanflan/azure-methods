@@ -25,19 +25,18 @@ if __name__ == '__main__':
 
     with TemporaryDirectory() as tmp_dir:
 
-        save_point_path = BlobFactory().download_to_file(container=BLOB_CONTAINER,
-                                                         blob_path=BLOB_PATH,
-                                                         tmp_dir=tmp_dir)
-
+        save_point = BlobFactory().download_to_file(BLOB_CONTAINER,
+                                                    BLOB_PATH,
+                                                    tmp_dir)
         ops = EtlOperations()
 
-        if not save_point_path:
+        if not save_point:
             logger.info(f'Retrieving user snapshot from Graph.')
 
             ops.load_snapshot(tmp_dir)
         else:
             logger.info(f'Retrieving user delta from Graph.')
 
-            ops.load_delta(save_point_path, tmp_dir)
+            ops.load_delta(save_point, tmp_dir)
 
     logger.info(f'Completed successfully...')
