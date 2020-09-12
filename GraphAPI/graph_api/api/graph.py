@@ -152,7 +152,7 @@ def get_delta_list(token, delta_link):
 
         raise
 
-    if not len(data['value']):
+    if not data['value']:
         logger.info('No user deltas exist.')
         return None, []
 
