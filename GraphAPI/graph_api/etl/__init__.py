@@ -1,5 +1,4 @@
 from datetime import datetime
-import logging
 import json
 
 from graph_api import (GRAPH_API_SCOPES, GRAPH_PAGE_SIZE, BLOB_CONTAINER,
@@ -9,9 +8,7 @@ from graph_api.api.graph import (get_users, get_delta_link, get_delta,
 from graph_api.api.blob import BlobFactory
 from graph_api.api.lake import LakeFactory
 from graph_api.util import load_from_path
-import graph_api.util.log
-
-logger = logging.getLogger(__name__)
+from graph_api.util.log import logger
 
 
 class EtlOperations:

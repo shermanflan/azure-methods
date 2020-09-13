@@ -1,19 +1,15 @@
-import logging
 from tempfile import TemporaryDirectory
 
 from graph_api import BLOB_CONTAINER, BLOB_PATH
 from graph_api.api.blob import BlobFactory
 from graph_api.etl import EtlOperations
-import graph_api.util.log
-
-logger = logging.getLogger(__name__)
+from graph_api.util.log import logger
 
 
 if __name__ == '__main__':
 
     # TODO
     # Consider writing success/failure to Teams
-    # Use Application Insights
     # Create postman collection and add to git
     # Update readme (see here for MD examples):
     #   https://github.com/microsoftgraph?q=&type=&language=python
@@ -30,18 +26,22 @@ if __name__ == '__main__':
 
     with TemporaryDirectory() as tmp_dir:
 
-        save_point = BlobFactory().download_to_file(BLOB_CONTAINER,
-                                                    BLOB_PATH,
-                                                    tmp_dir)
-        ops = EtlOperations()
+        try:
+            save_point = BlobFactory().download_to_file(BLOB_CONTAINER,
+                                                        BLOB_PATH,
+                                                        tmp_dir)
+            ops = EtlOperations()
 
-        if not save_point:
-            logger.info(f'Retrieving user snapshot from Graph.')
+            if not save_point:
+                logger.info(f'Retrieving user snapshot from Graph.')
 
-            ops.load_snapshot(tmp_dir)
-        else:
-            logger.info(f'Retrieving user delta from Graph.')
+                ops.load_snapshot(tmp_dir)
+            else:
+                logger.info(f'Retrieving user delta from Graph.')
 
-            ops.load_delta(save_point, tmp_dir)
+                ops.load_delta(save_point, tmp_dir)
+        except Exception as e:
+            logger.error(f"Fatal error: {e}")
+            raise
 
     logger.info(f'Completed successfully...')

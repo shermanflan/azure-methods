@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-import logging
 from os.path import join
 
 import requests
@@ -8,10 +7,8 @@ from requests.exceptions import HTTPError
 
 from graph_api import (GRAPH_API_ENDPOINT, GRAPH_META,
                        GRAPH_API_SCOPES)
-import graph_api.util.log
+from graph_api.util.log import logger
 from graph_api.auth import OAuthFactory
-
-logger = logging.getLogger(__name__)
 
 
 # Simple retry example:

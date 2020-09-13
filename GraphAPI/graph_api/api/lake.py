@@ -1,4 +1,3 @@
-import logging
 from os.path import split
 from threading import Lock
 
@@ -7,9 +6,7 @@ from azure.core.exceptions import (ResourceNotFoundError,
 from azure.storage.filedatalake import DataLakeServiceClient
 
 from graph_api import LAKE_URL, STORE_KEY
-import graph_api.util.log
-
-logger = logging.getLogger(__name__)
+from graph_api.util.log import logger
 
 
 class LakeFactory(object):
