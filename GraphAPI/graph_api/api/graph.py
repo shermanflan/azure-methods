@@ -167,10 +167,10 @@ def get_delta(user_list, tmp_root):
         writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
         writer.writeheader()
 
+        session = requests.Session()
         token = OAuthFactory().get_token(GRAPH_API_SCOPES)
         headers = {'Authorization': f"Bearer {token}"}
         params = {'$select': GRAPH_META}
-        session = requests.Session()
 
         for u in user_list:
             uri = f"{GRAPH_API_ENDPOINT}/users/{u}"
@@ -178,11 +178,11 @@ def get_delta(user_list, tmp_root):
             try:
                 user_list = session.get(uri, headers=headers, params=params)
                 user_list.raise_for_status()
-                data = user_list.json()
 
-                if data:
-                    del data['@odata.context']
-                    writer.writerow(data)
+                data = user_list.json()
+                del data['@odata.context']
+
+                writer.writerow(data)
             except HTTPError as e:
                 logger.error(f'Initial response Code: {user_list.status_code}')
 
