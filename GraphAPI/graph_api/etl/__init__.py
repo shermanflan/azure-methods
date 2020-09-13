@@ -8,7 +8,6 @@ from graph_api.api.graph import (get_users, get_delta_link, get_delta,
                                  get_delta_list)
 from graph_api.api.blob import BlobFactory
 from graph_api.api.lake import LakeFactory
-from graph_api.auth import OAuthFactory
 from graph_api.util import load_from_path
 import graph_api.util.log
 
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 class EtlOperations:
 
     def __init__(self):
-        self.token = OAuthFactory().get_token(GRAPH_API_SCOPES)
+        pass
 
     def load_snapshot(self, tmp_dir):
         """
@@ -27,7 +26,7 @@ class EtlOperations:
         :return: None
         """
         # TODO: Do retry here imperatively.
-        user_file = get_users(token=self.token, tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
+        user_file = get_users(tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
 
         logger.info(f'Uploading user snapshot to lake.')
 
@@ -36,7 +35,7 @@ class EtlOperations:
 
         logger.info(f'Saving delta link to establish "sync from now".')
 
-        delta_link = get_delta_link(token=self.token)
+        delta_link = get_delta_link()
         delta_link.update({'saved_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')})
 
         BlobFactory().upload(container=BLOB_CONTAINER, blob_path=BLOB_PATH,
@@ -57,14 +56,13 @@ class EtlOperations:
         logger.info(f'Retrieving user delta (ids only) from Graph.')
 
         # TODO: Do retry here imperatively.
-        delta_link, ids = get_delta_list(token=self.token,
-                                         delta_link=delta_link['@odata.deltaLink'])
+        delta_link, ids = get_delta_list(delta_link=delta_link['@odata.deltaLink'])
 
         if delta_link and ids:
             logger.info(f'Retrieving user delta from Graph.')
 
             # TODO: Do retry here imperatively.
-            user_file = get_delta(token=self.token, user_list=ids, tmp_root=tmp_dir)
+            user_file = get_delta(user_list=ids, tmp_root=tmp_dir)
 
             logger.info(f'Uploading user delta to lake.')
 

@@ -6,8 +6,10 @@ from os.path import join
 import requests
 from requests.exceptions import HTTPError
 
-from graph_api import GRAPH_API_ENDPOINT, GRAPH_META
+from graph_api import (GRAPH_API_ENDPOINT, GRAPH_META,
+                       GRAPH_API_SCOPES)
 import graph_api.util.log
+from graph_api.auth import OAuthFactory
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +27,16 @@ logger = logging.getLogger(__name__)
 #     return response
 
 
-def get_users(token, tmp_root, limit=250):
+def get_users(tmp_root, limit=250):
     """
     Get initial user snapshot using REST and save to CSV. Uses
     session to promote connection reuse.
 
-    :param token:
     :param tmp_root:
     :param limit:
     :return: full path to saved flat file
     """
+    token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
     params = {'$top': f"{limit}", '$select': GRAPH_META}
@@ -112,7 +114,7 @@ def _get_next_users(session, uri, headers):
 #         endpoint = response.get('@odata.nextLink')
 
 
-def get_delta_link(token):
+def get_delta_link():
     """
     Establishes the "sync from now" checkpoint and retrieves the first
     delta link.
@@ -121,9 +123,9 @@ def get_delta_link(token):
     See:
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
-    :param token:
     :return: the Dict containing first users delta link.
     """
+    token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     uri = f"{GRAPH_API_ENDPOINT}/users/delta"
     headers = {'Authorization': f"Bearer {token}"}
     params = {
@@ -149,7 +151,7 @@ def get_delta_link(token):
         raise
 
 
-def get_delta_list(token, delta_link):
+def get_delta_list(delta_link):
     """
     Get delta of users since last delta link (id's only).
 
@@ -157,10 +159,10 @@ def get_delta_list(token, delta_link):
     See:
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
-    :param token:
     :param delta_link:
     :return: List of user ids.
     """
+    token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     headers = {'Authorization': f"Bearer {token}"}
 
     try:
@@ -227,7 +229,7 @@ def _get_next_delta(session, uri, headers):
     raise Exception(f'Unknown error condition, no next or delta link.')
 
 
-def get_delta(token, user_list, tmp_root):
+def get_delta(user_list, tmp_root):
     """
     Get list users as specified in given list of ids.
 
@@ -235,7 +237,6 @@ def get_delta(token, user_list, tmp_root):
     See:
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
-    :param token:
     :param user_list:
     :param tmp_root:
     :return:
@@ -248,6 +249,7 @@ def get_delta(token, user_list, tmp_root):
         writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
         writer.writeheader()
 
+        token = OAuthFactory().get_token(GRAPH_API_SCOPES)
         headers = {'Authorization': f"Bearer {token}"}
         params = {'$select': GRAPH_META}
         session = requests.Session()
@@ -267,7 +269,7 @@ def get_delta(token, user_list, tmp_root):
                 logger.error(f'Initial response Code: {user_list.status_code}')
 
                 if user_list.status_code == 404:
-                    logger.error(f'User {u} not found. Skipping...')
+                    logger.error(f'User "{u}" not found. Skipping...')
                     continue
 
                 logger.exception(e)
