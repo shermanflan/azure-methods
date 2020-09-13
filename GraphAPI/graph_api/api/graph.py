@@ -97,10 +97,10 @@ def get_delta_link():
 
         delta_link = delta.json()
 
-        if '@odata.deltaLink' in delta_link:
-            return delta_link
-        else:
-            raise Exception(f"Unknown error status: could not get delta link.")
+        assert '@odata.deltaLink' in delta_link, \
+            "Error: Delta link does not exist."
+
+        return delta_link
 
     except HTTPError as e:
         logger.debug(f'Response Code: {delta.status_code}')
