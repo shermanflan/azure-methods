@@ -8,6 +8,7 @@ from requests.exceptions import HTTPError
 from graph_api import (GRAPH_API_ENDPOINT, GRAPH_META,
                        GRAPH_API_SCOPES)
 from graph_api.auth import OAuthFactory
+from graph_api.exceptions import RetryableError
 from graph_api.util.log import get_logger
 
 logger = get_logger(__name__)
@@ -46,7 +47,16 @@ def get_users(tmp_root, limit=250):
                 logger.error(f'Initial response Code: {users.status_code}')
                 logger.exception(e)
 
-                raise
+                if users.status_code in (429, 503, 504):
+                    logger.error(f"Server overloaded: Backing off...")
+
+                    try:
+                        valid_delay = int(users.headers.get("Retry-After"))
+                        raise RetryableError(f"Retry-after: {valid_delay}.",
+                                             retry_after=valid_delay)
+                    except (ValueError, TypeError):
+                        raise RetryableError(f"Retry exponential backoff.",
+                                             retry_after=None)
 
             writer.writerows(data['value'])
 
@@ -93,6 +103,17 @@ def get_delta_link():
         logger.debug(f'Response Code: {delta.status_code}')
         logger.exception(e)
 
+        if delta.status_code in (429, 503, 504):
+            logger.error(f"Server overloaded: Backing off...")
+
+            try:
+                valid_delay = int(delta.headers.get("Retry-After"))
+                raise RetryableError(f"Retry-after: {valid_delay}.",
+                                     retry_after=valid_delay)
+            except (ValueError, TypeError):
+                raise RetryableError(f"Retry exponential backoff.",
+                                     retry_after=None)
+
         raise
 
 
@@ -121,6 +142,17 @@ def get_delta_list(uri):
         except HTTPError as e:
             logger.error(f'Initial response Code: {users.status_code}')
             logger.exception(e)
+
+            if users.status_code in (429, 503, 504):
+                logger.error(f"Server overloaded: Backing off...")
+
+                try:
+                    valid_delay = int(users.headers.get("Retry-After"))
+                    raise RetryableError(f"Retry-after: {valid_delay}.",
+                                         retry_after=valid_delay)
+                except (ValueError, TypeError):
+                    raise RetryableError(f"Retry exponential backoff.",
+                                         retry_after=None)
 
             raise
 
@@ -151,13 +183,13 @@ def get_delta(user_list, tmp_root):
 
     with open(tmp_path, 'w', newline='') as csv_file:
 
-        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
-        writer.writeheader()
-
         session = requests.Session()
         token = OAuthFactory().get_token(GRAPH_API_SCOPES)
         headers = {'Authorization': f"Bearer {token}"}
         params = {'$select': GRAPH_META}
+
+        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
+        writer.writeheader()
 
         for u in user_list:
             uri = f"{GRAPH_API_ENDPOINT}/users/{u}"
@@ -172,12 +204,22 @@ def get_delta(user_list, tmp_root):
                 writer.writerow(data)
             except HTTPError as e:
                 logger.error(f'Initial response Code: {user_list.status_code}')
+                logger.exception(e)
 
                 if user_list.status_code == 404:
-                    logger.error(f'User "{u}" not found. Skipping...')
+                    logger.error(f"User '{u}' not found. Skipping...")
                     continue
 
-                logger.exception(e)
+                if user_list.status_code in (429, 503, 504):
+                    logger.error(f"Server overloaded: Backing off...")
+
+                    try:
+                        valid_delay = int(user_list.headers.get("Retry-After"))
+                        raise RetryableError(f"Retry-after: {valid_delay}.",
+                                             retry_after=valid_delay)
+                    except (ValueError, TypeError):
+                        raise RetryableError(f"Retry exponential backoff.",
+                                             retry_after=None)
 
                 raise
 

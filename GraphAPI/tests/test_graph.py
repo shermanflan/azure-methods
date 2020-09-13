@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import logging
 
 from tenacity import (Retrying, retry, stop_after_attempt, RetryError,
-                      TryAgain, wait_fixed, wait_exponential, retry_if_result,
-                      before_log, before_sleep_log)
+                      TryAgain, wait_fixed, wait_exponential,
+                      retry_if_result, before_log, before_sleep_log)
 
-from graph_api.exceptions import RetryableError
+from graph_api.exceptions import RetryableError, RetryExceededError
 import graph_api.util.log
 
 logger = logging.getLogger(__name__)
@@ -16,24 +16,24 @@ Test routines for validating retry algorithms.
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
-def stop_after_x_attempts(times):
+def _stop_after_x_attempts(times):
     logger.info(f"Attempts left: {times['times']}")
     times['times'] -= 1
     raise RetryableError(f"Simulated error...{times['times']}")
 
 
-def test_retry_after():
-    times_x = {'times': 3}
-    try:
-        stop_after_x_attempts(times_x)
-    except RetryError as e:
-        pass
-
-    assert times_x['times'] == 0
+# def test_retry_after():
+#     times_x = {'times': 3}
+#     try:
+#         _stop_after_x_attempts(times_x)
+#     except RetryError as e:
+#         pass
+#
+#     assert times_x['times'] == 0
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=5))
-def exponential_backoff(times):
+def _exponential_backoff(times):
     ts = datetime.now()
     logger.info(f"Attempts left: {times['times']}, {ts - times['ts']}")
     times['delta'] = ts - times['ts']
@@ -43,18 +43,19 @@ def exponential_backoff(times):
     raise RetryableError(f"Simulated error...{times['times']}")
 
 
-def test_retry_backoff():
-    times_x = {'times': 5, 'ts': datetime.now()}
-    try:
-        # 0, 5*2^0 = 5, 5*2^1=10, 5*2^2 = 20, 5*2^3 = 40
-        exponential_backoff(times_x)
-    except RetryError as e:
-        pass
+# def test_retry_backoff():
+#     times_x = {'times': 5, 'ts': datetime.now()}
+#     try:
+#         # 0, 5*2^0 = 5, 5*2^1=10, 5*2^2 = 20, 5*2^3 = 40
+#         _exponential_backoff(times_x)
+#     except RetryError as e:
+#         pass
+#
+#     assert times_x['times'] == 0 \
+#            and times_x['delta'] >= timedelta(seconds=40)
 
-    assert times_x['times'] == 0 \
-           and times_x['delta'] >= timedelta(seconds=40)
 
-def is_backoff(value):
+def _is_backoff(value):
     """
 
     :param value: Set to result of decorated function
@@ -64,101 +65,190 @@ def is_backoff(value):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1),
-       retry=retry_if_result(is_backoff),
+       retry=retry_if_result(_is_backoff),
        before=before_log(logger, logging.DEBUG))
-def might_return_backoff():
+def _might_return_backoff():
     return 30
 
 
-def test_conditional_retry():
-    """
-    Example of retrying based on return result.
-    :return:
-    """
-    try:
-        might_return_backoff()
-    except RetryError as e:
-        pass
-
-    assert True
+# def test_conditional_retry():
+#     """
+#     Example of retrying based on return result.
+#     :return:
+#     """
+#     try:
+#         _might_return_backoff()
+#     except RetryError as e:
+#         pass
+#
+#     assert True
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1),
        before_sleep=before_sleep_log(logger, logging.DEBUG))
-def manual_retry():
+def _manual_retry():
     raise TryAgain()
 
 
-def test_try_again():
-    """
-    Example of retrying imperatively.
-    :return:
-    """
-    try:
-        manual_retry()
-    except RetryError as e:
-        pass
-
-    assert True
+# def test_try_again():
+#     """
+#     Example of retrying imperatively.
+#     :return:
+#     """
+#     try:
+#         _manual_retry()
+#     except RetryError as e:
+#         pass
+#
+#     assert True
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(1),
        before=before_log(logger, logging.DEBUG))
-def raise_my_exception():
+def _raise_my_exception():
     raise RetryableError(f"Simulated error with backoff.", retry_after=10)
 
 
-def test_dynamic_retry():
-    """
-    Example of changing retry args at run-time.
-    :return:
-    """
-    try:
-        raise_my_exception.retry_with(wait=wait_fixed(10))()
-    except RetryError as e:
-        pass
+# def test_dynamic_retry():
+#     """
+#     Example of changing retry args at run-time.
+#     :return:
+#     """
+#     try:
+#         _raise_my_exception.retry_with(wait=wait_fixed(10))()
+#     except RetryError as e:
+#         pass
+#
+#     assert True
 
-    assert True
 
-
-def flaky_function(message):
+def _flaky_function(message):
     raise RetryableError(f"Simulated error '{message}'.", retry_after=10)
 
 
-def test_imperative():
-    """
-    Example demonstrating using Retrying directly.
+# def test_imperative():
+#     """
+#     Example demonstrating using Retrying directly.
+#
+#     :return:
+#     """
+#     max_attempts = 3
+#     back_off = 5
+#     redo = Retrying(stop=stop_after_attempt(max_attempts),
+#                     reraise=True, wait=wait_fixed(back_off),
+#                     before=before_log(logger, logging.DEBUG))
+#
+#     try:
+#         redo(_flaky_function, 'I really do try')
+#     except RetryableError as e:
+#         logger.error(f"Retryable: {e}, {e.retry_after}")
 
+
+# def test_code_block():
+#     """
+#     Example demonstrating using Retrying in a code block.
+#
+#     :return:
+#     """
+#     try:
+#         tries = 3
+#         back_off = 2
+#
+#         for attempt in Retrying(stop=stop_after_attempt(tries),
+#                                 wait=wait_fixed(back_off), reraise=True):
+#             with attempt:
+#                 logger.info(f"Attempts left in block: {tries}")
+#                 tries -= 1
+#                 raise RetryableError(f"Simulated error in code block.", retry_after=10)
+#
+#     except RetryableError as e:
+#         logger.error(f"Retryable: {e}")
+
+def _do_something(test_name, decision_tree):
+    do_error, do_back_off = next(decision_tree)
+
+    if do_error:
+        logger.debug(f"{test_name}: Raising error with backoff = '{do_back_off}'.")
+        raise RetryableError(f"Error in code block.", retry_after=3 if do_back_off else None)
+    else:
+        logger.debug(f"{test_name}: No error raised.")
+
+    return 'Completed'
+
+
+def _backoff(multiplier):
+    power = 0
+
+    while True:
+        yield multiplier * (2 ** power)
+        power += 1
+
+
+def _actions():
+    commands = [
+        (True, True),  # do error, do backoff
+        (True, True),
+        (True, True),
+        (True, False),
+        (True, False),
+        (True, False),
+        (True, True),
+        (True, True),
+        (False, True),
+        (True, False),
+        (True, False),
+        (True, False),
+        (True, True),
+        (True, True),
+        (True, True),
+        (True, False),
+        (True, False),
+        (True, False),
+        (True, True),
+        (True, True),
+    ]
+    for c in commands:
+        yield c
+
+
+def _retry_it(method, retries, multiplier):
+    """
+    Example showing dynamic retry strategy based on existence of
+    "Retry-After".
+
+    :param method:
+    :param retries:
+    :param multiplier:
     :return:
     """
-    max_attempts = 3
-    back_off = 5
-    redo = Retrying(stop=stop_after_attempt(max_attempts),
-                    reraise=True, wait=wait_fixed(back_off),
-                    before=before_log(logger, logging.DEBUG))
+    from time import sleep
+    delay, delays, actions = 0, _backoff(multiplier), _actions()
+    cycle = 0
 
-    try:
-        redo(flaky_function, 'I really do try')
-    except RetryableError as e:
-        logger.error(f"Retryable: {e}, {e.retry_after}")
+    while cycle < retries:
+        try:
+            cycle += 1
+            return method(decision_tree=actions)  # succeeded
+
+        except RetryableError as e:
+            logger.error(f"Retryable: {e}")
+
+            if e.retry_after:
+                logger.debug(f"Running for {cycle} with delay of {e.retry_after}.")
+                sleep(e.retry_after)
+                delay, delays = 0, _backoff(multiplier)  # reset
+            else:
+                delay += next(delays)
+                logger.debug(f"Running for {cycle} with delay of {delay}.")
+                sleep(delay)
+
+    raise RetryExceededError("Retries exceeded.")
 
 
-def test_code_block():
-    """
-    Example demonstrating using Retrying in a code block.
+def test_custom_retry():
+    from functools import partial
 
-    :return:
-    """
-    try:
-        tries = 3
-        back_off = 2
+    test_dynamic = partial(_do_something, test_name="test_dynamic_raise")
+    result = _retry_it(method=test_dynamic, retries=10, multiplier=1)
 
-        for attempt in Retrying(stop=stop_after_attempt(tries),
-                                wait=wait_fixed(back_off), reraise=True):
-            with attempt:
-                logger.info(f"Attempts left in block: {tries}")
-                tries -= 1
-                raise RetryableError(f"Simulated error in code block.", retry_after=10)
-
-    except RetryableError as e:
-        logger.error(f"Retryable: {e}")
+    assert result == 'Completed'

@@ -1,0 +1,50 @@
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-reference-yaml
+name: fusion-container-group  # Name of the container group
+apiVersion: 2018-10-01
+location: "East US"
+properties: # Properties of container group
+  containers: # Array of container instances in the group
+  - name: graph2lake # Name of an instance
+    properties: # Properties of an instance
+      image: pahintegrationregistry.azurecr.io/graph2lake:latest # Container image used to create the instance
+      environmentVariables:
+      - name: APP_LOG_KEY
+        value: "bhs.aci.graph2lake.dev"
+      - name: AAD_TENANT_ID
+        secureValue: ""
+      - name: APP_ID
+        secureValue: ""
+      - name: APP_SECRET
+        value: ""
+      - name: APP_INSIGHTS_KEY
+        value: ""
+      - name: GRAPH_API_SCOPES
+        value: "https://graph.microsoft.com/.default"
+      - name: GRAPH_API_ENDPOINT
+        value: "https://graph.microsoft.com/v1.0"
+      - name: GRAPH_META
+        value: "id,displayName,givenName,surname,userPrincipalName,jobTitle,companyName,department,officeLocation,employeeId,mail,onPremisesDomainName,createdDateTime"
+      - name: GRAPH_PAGE_SIZE
+        value: "250"
+      - name: STORE_ACCOUNT_NAME
+        value: ""
+      - name: STORE_ACCOUNT_KEY
+        value: ""
+      - name: BLOB_CONTAINER_NAME
+        value: "python-app-data"
+      - name: BLOB_PATH
+        value: "graph-api/next_delta.json"
+      - name: LAKE_CONTAINER_NAME
+        value: "enterprisedata"
+      - name: LAKE_FOLDER_PATH
+        value: "Raw/Graph Deltas"
+      resources: # Resource requirements of the instance
+        requests:
+          memoryInGB: 1.5
+          cpu: 1
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server:
+    username:
+    password: ""
+  restartPolicy: Never
+  osType: Linux

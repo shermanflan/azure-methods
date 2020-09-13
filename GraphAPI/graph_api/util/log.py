@@ -3,7 +3,7 @@ import logging
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 import structlog
 
-from graph_api import APP_INSIGHTS_KEY, APP_IDENTIFIER
+from graph_api import APP_INSIGHTS_KEY, APP_LOG_KEY
 
 # Equivalent to:
 # util.basicConfig(format='%(asctime)s %(levelname)s [%(name)s]: %(message)s',
@@ -40,14 +40,12 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s]: %(message)s
 console.setFormatter(formatter)
 root_logger.addHandler(console)
 
-# Define Azure app insights log handler.
-az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={APP_INSIGHTS_KEY}')
-az_handler.setLevel(logging.DEBUG)
-az_formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s]: %(message)s')
-az_handler.setFormatter(az_formatter)
-
-# Add Azure app insights logging.
-root_logger.addHandler(az_handler)
+# Add and define Azure app insights log handler.
+# az_handler = AzureLogHandler(connection_string=f'InstrumentationKey={APP_INSIGHTS_KEY}')
+# az_handler.setLevel(logging.DEBUG)
+# az_formatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s]: %(message)s')
+# az_handler.setFormatter(az_formatter)
+# root_logger.addHandler(az_handler)
 
 # Quiet chatty libs
 logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)
@@ -55,4 +53,4 @@ logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)
 
 # Global logger
 def get_logger(name):
-    return structlog.get_logger(name).bind(source_app=APP_IDENTIFIER)
+    return structlog.get_logger(name).bind(source_app=APP_LOG_KEY)

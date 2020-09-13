@@ -6,9 +6,11 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      - APP_LOG_KEY=bhs.aci.graph2lake.dev
       - AAD_TENANT_ID=
       - APP_ID=
       - APP_SECRET=
+      - APP_INSIGHTS_KEY=
       - GRAPH_API_SCOPES=https://graph.microsoft.com/.default
       - GRAPH_API_ENDPOINT=https://graph.microsoft.com/v1.0
       - GRAPH_META=id,displayName,givenName,surname,userPrincipalName,jobTitle,companyName,department,officeLocation,employeeId,mail,onPremisesDomainName,createdDateTime
