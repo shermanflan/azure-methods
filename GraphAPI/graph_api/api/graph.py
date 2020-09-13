@@ -13,19 +13,6 @@ from graph_api.util.log import get_logger
 logger = get_logger(__name__)
 
 
-# Simple retry example:
-#   https://github.com/microsoftgraph/msgraph-sdk-python-core/blob/dev/msgraphcore/middleware/authorization.py
-# def send(self, request, **kwargs):
-#     request.headers.update({'Authorization': 'Bearer {}'.format(self._get_access_token())})
-#     response = super().send(request, **kwargs)
-#
-#     # Token might have expired just before transmission, retry the request one more time
-#     if response.status_code == 401 and self.retry_count < 2:
-#         self.retry_count += 1
-#         return self.send(request, **kwargs)
-#     return response
-
-
 def get_users(tmp_root, limit=250):
     """
     Get initial user snapshot using REST and save to CSV. Uses
