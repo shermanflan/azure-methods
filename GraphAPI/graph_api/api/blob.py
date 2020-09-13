@@ -5,7 +5,9 @@ from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient
 
 from graph_api import BLOB_URL, STORE_KEY
-from graph_api.util.log import logger
+from graph_api.util.log import get_logger
+
+logger = get_logger(__name__)
 
 
 class BlobFactory(object):

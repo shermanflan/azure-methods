@@ -7,8 +7,10 @@ from requests.exceptions import HTTPError
 
 from graph_api import (GRAPH_API_ENDPOINT, GRAPH_META,
                        GRAPH_API_SCOPES)
-from graph_api.util.log import logger
 from graph_api.auth import OAuthFactory
+from graph_api.util.log import get_logger
+
+logger = get_logger(__name__)
 
 
 # Simple retry example:
@@ -33,82 +35,41 @@ def get_users(tmp_root, limit=250):
     :param limit:
     :return: full path to saved flat file
     """
+    session = requests.Session()
     token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
     params = {'$top': f"{limit}", '$select': GRAPH_META}
-
-    try:
-        session = requests.Session()
-        users = session.get(uri, headers=headers, params=params)
-        users.raise_for_status()
-        data = users.json()
-    except HTTPError as e:
-        logger.error(f'Initial response Code: {users.status_code}')
-        logger.exception(e)
-
-        raise
-
+    count = 0
     file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
     tmp_path = join(tmp_root, f"{file_stamp}-user_snapshot.csv")
 
     with open(tmp_path, 'w', newline='') as csv_file:
 
-        count = len(data['value'])
-
-        if not count:
-            logger.info('No user data found.')
-            return
-
         writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
         writer.writeheader()
-        writer.writerows(data['value'])
 
-        while True:
+        while uri:
 
-            if '@odata.nextLink' in data:
-                uri = data['@odata.nextLink']
-                data = _get_next_users(session, uri, headers)
+            try:
+                users = session.get(uri, headers=headers, params=params)
+                users.raise_for_status()
+                data = users.json()
+            except HTTPError as e:
+                logger.error(f'Initial response Code: {users.status_code}')
+                logger.exception(e)
 
-                count += len(data['value'])
+                raise
 
-                writer.writerows(data['value'])
+            writer.writerows(data['value'])
 
-                logger.debug(f'{count} snapshot rows written.')
-            else:
-                break
+            count += len(data['value'])
+            logger.debug(f"{count} snapshot rows written.")
+
+            uri = data.get('@odata.nextLink')
+            params = None
 
     return tmp_path
-
-
-def _get_next_users(session, uri, headers):
-    """
-    Reuses the request connection for efficiency.
-
-    :param session:
-    :param uri:
-    :param headers:
-    :return: response payload as Dict
-    """
-    try:
-        users = session.get(uri, headers=headers)
-        users.raise_for_status()
-
-        return users.json()
-    except HTTPError as e:
-        logger.error(f'Delta response Code: {users.status_code}')
-        logger.exception(e)
-
-        raise
-
-# Simple generator example from:
-# https://github.com/microsoftgraph/python-sample-pagination/blob/master/generator.py
-# def graph_generator(session, endpoint=None):
-#     while endpoint:
-#         print('Retrieving next page ...')
-#         response = session.get(endpoint).json()
-#         yield from response.get('value')
-#         endpoint = response.get('@odata.nextLink')
 
 
 def get_delta_link():
@@ -148,7 +109,7 @@ def get_delta_link():
         raise
 
 
-def get_delta_list(delta_link):
+def get_delta_list(uri):
     """
     Get delta of users since last delta link (id's only).
 
@@ -156,74 +117,34 @@ def get_delta_list(delta_link):
     See:
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
-    :param delta_link:
+    :param uri:
     :return: List of user ids.
     """
+    session = requests.Session()
     token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     headers = {'Authorization': f"Bearer {token}"}
+    user_ids = []
 
-    try:
-        session = requests.Session()
-        users = session.get(delta_link, headers=headers)
-        users.raise_for_status()
-        data = users.json()
-    except HTTPError as e:
-        logger.error(f'Initial response Code: {users.status_code}')
-        logger.exception(e)
+    while uri:
 
-        raise
+        try:
+            users = session.get(uri, headers=headers)
+            users.raise_for_status()
+            data = users.json()
+        except HTTPError as e:
+            logger.error(f'Initial response Code: {users.status_code}')
+            logger.exception(e)
 
-    if not data['value']:
-        logger.info('No user deltas exist.')
-        return None, []
+            raise
 
-    user_ids = [u['id'] for u in data['value']]
+        user_ids.extend([u['id'] for u in data['value']])
 
-    while True:
+        uri = data.get('@odata.nextLink')
 
-        if '@odata.nextLink' in data:
-            uri = data['@odata.nextLink']
-            data = _get_next_delta(session, uri, headers)
+    assert '@odata.deltaLink' in data, "Error: Missing delta link."
+    logger.info(f'Collected {len(user_ids)} user ids.')
 
-            user_ids.extend([u['id'] for u in data['value']])
-
-        elif '@odata.deltaLink' in data:
-
-            logger.info(f'Collected {len(user_ids)} users, getting next delta link.')
-            del data['value']
-
-            return data, user_ids
-        else:
-            break
-
-    raise Exception(f'Unknown error condition, no next or delta link.')
-
-
-def _get_next_delta(session, uri, headers):
-    """
-    Reuses the request connection via shared Session for efficiency.
-
-    :param session
-    :param uri:
-    :param headers:
-    :return: response payload as Dict
-    """
-
-    try:
-        users = session.get(uri, headers=headers)
-        users.raise_for_status()
-        data = users.json()
-
-        if '@odata.nextLink' in data or '@odata.deltaLink' in data:
-            return data
-
-    except HTTPError as e:
-        logger.error(f'Delta response Code: {users.status_code}')
-        logger.exception(e)
-
-        raise
-
-    raise Exception(f'Unknown error condition, no next or delta link.')
+    return data, user_ids
 
 
 def get_delta(user_list, tmp_root):

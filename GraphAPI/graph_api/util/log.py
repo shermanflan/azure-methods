@@ -52,5 +52,7 @@ root_logger.addHandler(az_handler)
 # Quiet chatty libs
 logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)
 
+
 # Global logger
-logger = structlog.get_logger().bind(source_app=APP_IDENTIFIER)
+def get_logger(name):
+    return structlog.get_logger(name).bind(source_app=APP_IDENTIFIER)

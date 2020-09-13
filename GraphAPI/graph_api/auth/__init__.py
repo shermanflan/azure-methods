@@ -3,7 +3,9 @@ from threading import Lock
 import msal
 
 from graph_api import (AAD_ENDPOINT, APP_ID, APP_SECRET)
-from graph_api.util.log import logger
+from graph_api.util.log import get_logger
+
+logger = get_logger(__name__)
 
 
 class OAuthFactory(object):

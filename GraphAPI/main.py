@@ -3,8 +3,9 @@ from tempfile import TemporaryDirectory
 from graph_api import BLOB_CONTAINER, BLOB_PATH
 from graph_api.api.blob import BlobFactory
 from graph_api.etl import EtlOperations
-from graph_api.util.log import logger
+from graph_api.util.log import get_logger
 
+logger = get_logger(__name__)
 
 if __name__ == '__main__':
 

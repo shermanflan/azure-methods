@@ -8,7 +8,9 @@ from graph_api.api.graph import (get_users, get_delta_link, get_delta,
 from graph_api.api.blob import BlobFactory
 from graph_api.api.lake import LakeFactory
 from graph_api.util import load_from_path
-from graph_api.util.log import logger
+from graph_api.util.log import get_logger
+
+logger = get_logger(__name__)
 
 
 class EtlOperations:
@@ -53,7 +55,7 @@ class EtlOperations:
         logger.info(f'Retrieving user delta (ids only) from Graph.')
 
         # TODO: Do retry here imperatively.
-        delta_link, ids = get_delta_list(delta_link=delta_link['@odata.deltaLink'])
+        delta_link, ids = get_delta_list(uri=delta_link['@odata.deltaLink'])
 
         if delta_link and ids:
             logger.info(f'Retrieving user delta from Graph.')
