@@ -103,7 +103,7 @@ def _retry(method):
         :param multiplier:
         :return:
         """
-        delay, delays = 0, _backoff(multiplier)
+        delay, deltas = 0, _backoff(multiplier)
         cycle = 0
 
         while cycle < retries:
@@ -117,9 +117,9 @@ def _retry(method):
                 if e.retry_after:
                     logger.debug(f"Retry #{cycle} with delay of {e.retry_after}.")
                     sleep(e.retry_after)
-                    delay, delays = 0, _backoff(multiplier)  # reset
+                    delay, deltas = 0, _backoff(multiplier)  # reset
                 else:
-                    delay += next(delays)
+                    delay += next(deltas)
                     logger.debug(f"Retry # {cycle} with delay of {delay}.")
                     sleep(delay)
 

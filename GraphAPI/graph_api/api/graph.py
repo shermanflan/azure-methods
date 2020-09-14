@@ -28,7 +28,6 @@ def get_users(tmp_root, limit=250):
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
     params = {'$top': f"{limit}", '$select': GRAPH_META}
-    count = 0
     file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
     tmp_path = join(tmp_root, f"{file_stamp}-user_snapshot.csv")
 
@@ -36,6 +35,7 @@ def get_users(tmp_root, limit=250):
 
         writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
         writer.writeheader()
+        count = 0
 
         while uri:
 
@@ -43,6 +43,15 @@ def get_users(tmp_root, limit=250):
                 users = session.get(uri, headers=headers, params=params)
                 users.raise_for_status()
                 data = users.json()
+
+                writer.writerows(data['value'])
+
+                count += len(data['value'])
+                logger.debug(f"{count} snapshot rows written.")
+
+                uri = data.get('@odata.nextLink')
+                params = None
+
             except HTTPError as e:
                 logger.error(f'Initial response Code: {users.status_code}')
                 logger.exception(e)
@@ -57,14 +66,6 @@ def get_users(tmp_root, limit=250):
                     except (ValueError, TypeError):
                         raise RetryableError(f"Retry exponential backoff.",
                                              retry_after=None)
-
-            writer.writerows(data['value'])
-
-            count += len(data['value'])
-            logger.debug(f"{count} snapshot rows written.")
-
-            uri = data.get('@odata.nextLink')
-            params = None
 
     return tmp_path
 
@@ -91,7 +92,6 @@ def get_delta_link():
     try:
         delta = requests.get(uri, headers=headers, params=params)
         delta.raise_for_status()
-
         delta_link = delta.json()
 
         assert '@odata.deltaLink' in delta_link, \
@@ -139,6 +139,10 @@ def get_delta_list(uri):
             users = session.get(uri, headers=headers)
             users.raise_for_status()
             data = users.json()
+
+            user_ids.extend([u['id'] for u in data['value']])
+            uri = data.get('@odata.nextLink')
+            
         except HTTPError as e:
             logger.error(f'Initial response Code: {users.status_code}')
             logger.exception(e)
@@ -155,10 +159,6 @@ def get_delta_list(uri):
                                          retry_after=None)
 
             raise
-
-        user_ids.extend([u['id'] for u in data['value']])
-
-        uri = data.get('@odata.nextLink')
 
     assert '@odata.deltaLink' in data, "Error: Missing delta link."
     logger.info(f'Collected {len(user_ids)} user ids.')
