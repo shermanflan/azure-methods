@@ -30,13 +30,16 @@ def _raise_backoff(method):
             if e.response.status_code in (429, 503, 504):
                 logger.error(f"Server overloaded: Backing off...")
 
-                try:
-                    valid_delay = int(e.response.headers.get("Retry-After"))
-                    raise RetryableError(f"Retry-after: {valid_delay}.",
-                                         retry_after=valid_delay)
-                except (ValueError, TypeError):
-                    raise RetryableError(f"Retry exponential backoff.",
-                                         retry_after=None)
+                delay = e.response.headers.get("Retry-After", None)
+                if delay:
+                    try:
+                        raise RetryableError(f"Retry-after: {delay}.",
+                                             retry_after=int(delay))
+                    except (ValueError, TypeError):
+                        pass
+
+                raise RetryableError(f"Retry exponential backoff.",
+                                     retry_after=None)
             raise
 
     return handler
@@ -57,6 +60,7 @@ def get_users(tmp_root, limit=250):
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
     params = {'$top': f"{limit}", '$select': GRAPH_META}
+
     file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
     tmp_path = join(tmp_root, f"{file_stamp}-user_snapshot.csv")
 
@@ -148,7 +152,7 @@ def get_delta_list(uri):
 @_raise_backoff
 def get_delta(user_list, tmp_root):
     """
-    Get list users as specified in given list of ids. Uses
+    Get list of users as specified in given list of ids. Uses
     change tracking for delta updates to users after initial sync.
 
     See:
@@ -186,7 +190,6 @@ def get_delta(user_list, tmp_root):
                 if user_list.status_code == 404:
                     logger.error(f"User '{u}' not found. Skipping...")
                     continue
-
                 raise
 
         return tmp_path
