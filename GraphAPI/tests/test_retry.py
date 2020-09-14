@@ -1,5 +1,6 @@
 import logging
 
+from graph_api.etl import _retry
 from graph_api.exceptions import RetryableError, RetryExceededError
 import graph_api.util.log
 
@@ -11,7 +12,8 @@ def _do_something(test_name, decision_tree):
 
     if do_error:
         logger.debug(f"{test_name}: Raising error with backoff = '{do_back_off}'.")
-        raise RetryableError(f"Error in code block.", retry_after=3 if do_back_off else None)
+        raise RetryableError(f"Error in code block.",
+                             retry_after=3 if do_back_off else None)
     else:
         logger.debug(f"{test_name}: No error raised.")
 
@@ -87,41 +89,13 @@ def _retry_it(method, retries, multiplier):
     raise RetryExceededError("Retries exceeded.")
 
 
-# def test_custom_retry():
-#     from functools import partial
-#
-#     test_dynamic = partial(_do_something, test_name="test_dynamic_raise")
-#     result = _retry_it(method=test_dynamic, retries=10, multiplier=1)
-#
-#     assert result == 'Completed'
+def test_custom_retry():
+    from functools import partial
 
+    test_dynamic = partial(_do_something, test_name="test_dynamic_raise")
+    result = _retry_it(method=test_dynamic, retries=10, multiplier=1)
 
-def _retry(method):
-    def redo(retries, multiplier, **kwargs):
-        from time import sleep
-        delay, delays = 0, _backoff(multiplier)
-        cycle = 0
-
-        while cycle < retries:
-            try:
-                cycle += 1
-                return method(**kwargs)
-
-            except RetryableError as e:
-                logger.error(f"Retryable: {e}")
-
-                if e.retry_after:
-                    logger.debug(f"Running for {cycle} with delay of {e.retry_after}.")
-                    sleep(e.retry_after)
-                    delay, delays = 0, _backoff(multiplier)  # reset
-                else:
-                    delay += next(delays)
-                    logger.debug(f"Running for {cycle} with delay of {delay}.")
-                    sleep(delay)
-
-        raise RetryExceededError("Retries exceeded.")
-
-    return redo
+    assert result == 'Completed'
 
 
 def test_retry_decorate():

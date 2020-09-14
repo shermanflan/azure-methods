@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import partial
 import json
 from time import sleep
 
