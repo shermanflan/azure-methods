@@ -5,8 +5,7 @@ from os.path import join
 import requests
 from requests.exceptions import HTTPError
 
-from graph_api import (GRAPH_API_ENDPOINT, GRAPH_META,
-                       GRAPH_API_SCOPES)
+from graph_api import GRAPH_API_ENDPOINT, GRAPH_API_SCOPES
 from graph_api.auth import OAuthFactory
 from graph_api.exceptions import RetryableError
 from graph_api.util.log import get_logger
@@ -46,12 +45,13 @@ def _raise_backoff(method):
 
 
 @_raise_backoff
-def get_users(tmp_root, limit=250):
+def get_users(tmp_root, columns, limit=250):
     """
     Get initial user snapshot using REST and save to CSV. Uses
     session to promote connection reuse.
 
     :param tmp_root:
+    :param columns:
     :param limit:
     :return: full path to saved flat file
     """
@@ -59,14 +59,14 @@ def get_users(tmp_root, limit=250):
     token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     uri = f"{GRAPH_API_ENDPOINT}/users"
     headers = {'Authorization': f"Bearer {token}"}
-    params = {'$top': f"{limit}", '$select': GRAPH_META}
+    params = {'$top': f"{limit}", '$select': columns}
 
     file_stamp = datetime.now().strftime('%Y%m%d_%H%M%S.%f')
     tmp_path = join(tmp_root, f"{file_stamp}-user_snapshot.csv")
 
     with open(tmp_path, 'w', newline='') as csv_file:
 
-        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
+        writer = csv.DictWriter(csv_file, fieldnames=columns.split(','))
         writer.writeheader()
         count = 0
 
@@ -88,7 +88,7 @@ def get_users(tmp_root, limit=250):
 
 
 @_raise_backoff
-def get_delta_link():
+def get_delta_link(columns):
     """
     Establishes the "sync from now" checkpoint and retrieves the first
     delta link. Uses change tracking for delta updates to users after
@@ -97,15 +97,13 @@ def get_delta_link():
     See:
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
+    :param columns:
     :return: the Dict containing first users delta link.
     """
     token = OAuthFactory().get_token(GRAPH_API_SCOPES)
     uri = f"{GRAPH_API_ENDPOINT}/users/delta"
     headers = {'Authorization': f"Bearer {token}"}
-    params = {
-        '$deltaToken': "latest",
-        '$select': GRAPH_META
-    }
+    params = {'$deltaToken': "latest", '$select': columns}
 
     delta = requests.get(uri, headers=headers, params=params)
     delta.raise_for_status()
@@ -150,7 +148,7 @@ def get_delta_list(uri):
 
 
 @_raise_backoff
-def get_delta(user_list, tmp_root):
+def get_delta(user_list, columns, tmp_root):
     """
     Get list of users as specified in given list of ids. Uses
     change tracking for delta updates to users after initial sync.
@@ -159,6 +157,7 @@ def get_delta(user_list, tmp_root):
     - https://docs.microsoft.com/en-us/graph/delta-query-users
 
     :param user_list:
+    :param columns:
     :param tmp_root:
     :return:
     """
@@ -170,9 +169,9 @@ def get_delta(user_list, tmp_root):
         session = requests.Session()
         token = OAuthFactory().get_token(GRAPH_API_SCOPES)
         headers = {'Authorization': f"Bearer {token}"}
-        params = {'$select': GRAPH_META}
+        params = {'$select': columns}
 
-        writer = csv.DictWriter(csv_file, fieldnames=GRAPH_META.split(','))
+        writer = csv.DictWriter(csv_file, fieldnames=columns.split(','))
         writer.writeheader()
 
         for u in user_list:

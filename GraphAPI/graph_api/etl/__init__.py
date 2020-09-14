@@ -2,8 +2,9 @@ from datetime import datetime
 import json
 from time import sleep
 
-from graph_api import (GRAPH_PAGE_SIZE, BLOB_CONTAINER,
-                       BLOB_PATH, LAKE_CONTAINER, LAKE_PATH)
+from graph_api import (GRAPH_PAGE_SIZE, GRAPH_META,
+                       BLOB_CONTAINER, BLOB_PATH, LAKE_CONTAINER,
+                       LAKE_PATH)
 from graph_api.api.graph import (get_users, get_delta_link, get_delta,
                                  get_delta_list)
 from graph_api.api.blob import BlobFactory
@@ -27,7 +28,8 @@ def load_snapshot(tmp_dir):
     """
     users_retry = _retry(get_users)
     user_file = users_retry(_RETRIES, _MULTIPLIER,
-                            tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
+                            tmp_root=tmp_dir, columns=GRAPH_META,
+                            limit=GRAPH_PAGE_SIZE)
 
     logger.info(f'Uploading user snapshot to lake.')
 
@@ -37,8 +39,11 @@ def load_snapshot(tmp_dir):
     logger.info(f'Saving delta link to establish "sync from now".')
 
     delta_link_retry = _retry(get_delta_link)
-    delta_link = delta_link_retry(_RETRIES, _MULTIPLIER)
-    delta_link.update({'saved_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')})
+    delta_link = delta_link_retry(_RETRIES, _MULTIPLIER,
+                                  columns=GRAPH_META)
+    delta_link.update({
+        'saved_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+    })
 
     BlobFactory().upload(container=BLOB_CONTAINER, blob_path=BLOB_PATH,
                          source=json.dumps(delta_link, indent=4))
@@ -67,7 +72,8 @@ def load_delta(save_point_path, tmp_dir):
 
         delta_retry = _retry(get_delta)
         user_file = delta_retry(_RETRIES, _MULTIPLIER,
-                                user_list=ids, tmp_root=tmp_dir)
+                                user_list=ids, columns=GRAPH_META,
+                                tmp_root=tmp_dir)
 
         logger.info(f'Uploading user delta to lake.')
 
