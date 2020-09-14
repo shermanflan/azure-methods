@@ -26,10 +26,9 @@ def load_snapshot(tmp_dir):
     :param tmp_dir:
     :return: None
     """
-    user_file = _retry(method=partial(get_users, tmp_root=tmp_dir,
-                                      limit=GRAPH_PAGE_SIZE),
-                       retries=_RETRIES, multiplier=_MULTIPLIER)
-    # user_file = get_users(tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
+    users_retry = _retry(get_users)
+    user_file = users_retry(_RETRIES, _MULTIPLIER,
+                            tmp_root=tmp_dir, limit=GRAPH_PAGE_SIZE)
 
     logger.info(f'Uploading user snapshot to lake.')
 
@@ -38,9 +37,8 @@ def load_snapshot(tmp_dir):
 
     logger.info(f'Saving delta link to establish "sync from now".')
 
-    delta_link = _retry(method=get_delta_link, retries=_RETRIES,
-                        multiplier=_MULTIPLIER)
-    # delta_link = get_delta_link()
+    delta_link_retry = _retry(get_delta_link)
+    delta_link = delta_link_retry(_RETRIES, _MULTIPLIER)
     delta_link.update({'saved_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')})
 
     BlobFactory().upload(container=BLOB_CONTAINER, blob_path=BLOB_PATH,
@@ -61,17 +59,16 @@ def load_delta(save_point_path, tmp_dir):
 
     logger.info(f'Retrieving user delta (ids only) from Graph.')
 
-    delta_link, ids = _retry(method=partial(get_delta_list,
-                                            uri=delta_link['@odata.deltaLink']),
-                             retries=_RETRIES, multiplier=_MULTIPLIER)
-    # delta_link, ids = get_delta_list(uri=delta_link['@odata.deltaLink'])
+    delta_list_retry = _retry(get_delta_list)
+    delta_link, ids = delta_list_retry(_RETRIES, _MULTIPLIER,
+                                       uri=delta_link['@odata.deltaLink'])
 
     if delta_link and ids:
         logger.info(f'Retrieving user delta from Graph.')
 
-        user_file = _retry(method=partial(get_delta, user_list=ids, tmp_root=tmp_dir),
-                           retries=_RETRIES, multiplier=_MULTIPLIER)
-        # user_file = get_delta(user_list=ids, tmp_root=tmp_dir)
+        delta_retry = _retry(get_delta)
+        user_file = delta_retry(_RETRIES, _MULTIPLIER,
+                                user_list=ids, tmp_root=tmp_dir)
 
         logger.info(f'Uploading user delta to lake.')
 
@@ -98,33 +95,35 @@ def _backoff(multiplier):
         power += 1
 
 
-def _retry(method, retries=3, multiplier=1):
-    """
-    Custom dynamic retry strategy based on existence of "Retry-After".
+def _retry(method):
+    def redo(retries, multiplier, **kwargs):
+        """
+        Bespoke retry strategy based on existence of "Retry-After".
 
-    :param method:
-    :param retries:
-    :param multiplier:
-    :return:
-    """
-    delay, delays = 0, _backoff(multiplier)
-    cycle = 0
+        :param retries:
+        :param multiplier:
+        :return:
+        """
+        delay, delays = 0, _backoff(multiplier)
+        cycle = 0
 
-    while cycle < retries:
-        try:
-            cycle += 1
-            return method()
+        while cycle < retries:
+            try:
+                cycle += 1
+                return method(**kwargs)
 
-        except RetryableError as e:
-            logger.error(f"Retryable: {e}")
+            except RetryableError as e:
+                logger.error(f"Retryable: {e}")
 
-            if e.retry_after:
-                logger.debug(f"Retry #{cycle} with delay of {e.retry_after}.")
-                sleep(e.retry_after)
-                delay, delays = 0, _backoff(multiplier)  # reset
-            else:
-                delay += next(delays)
-                logger.debug(f"Retry # {cycle} with delay of {delay}.")
-                sleep(delay)
+                if e.retry_after:
+                    logger.debug(f"Retry #{cycle} with delay of {e.retry_after}.")
+                    sleep(e.retry_after)
+                    delay, delays = 0, _backoff(multiplier)  # reset
+                else:
+                    delay += next(delays)
+                    logger.debug(f"Retry # {cycle} with delay of {delay}.")
+                    sleep(delay)
 
-    raise RetryExceededError("Retries exceeded.")
+        raise RetryExceededError("Retries exceeded.")
+
+    return redo
