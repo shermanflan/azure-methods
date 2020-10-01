@@ -1,0 +1,90 @@
+[
+  {
+    "category": "SQLInsights",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "AutomaticTuning",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "QueryStoreRuntimeStatistics",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "QueryStoreWaitStatistics",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "Errors",
+    "enabled": true,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "DatabaseWaitStatistics",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "Timeouts",
+    "enabled": true,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "Blocks",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "Deadlocks",
+    "enabled": true,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "DevOpsOperationsAudit",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  {
+    "category": "SQLSecurityAuditEvents",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    }
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "category": "Basic",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    },
+    "timeGrain": null
+  },
+  {
+    "category": "InstanceAndAppAdvanced",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    },
+    "timeGrain": null
+  },
+  {
+    "category": "WorkloadManagement",
+    "enabled": false,
+    "retentionPolicy": {
+      "days": 0,
+      "enabled": false
+    },
+    "timeGrain": null
+  }
+]
