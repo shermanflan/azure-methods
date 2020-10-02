@@ -16,7 +16,7 @@ services:
       - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_{0}.xlsx
       - BOX_FILE_MASK2=Telephony Usage By Branch {0}.xlsx
       - BOX_FILE_RENAME=Branch Scheduled Hours Breakdown.xlsx
-      - WS_PREV_NAME=PreviousMonth
+      - WS_PREV_NAME=PriorMonth
       - WS_CURR_NAME=CurrentMonth
       - WS_NEXT_NAME=NextMonth
       - BOX_FILE_RENAME2=Telephony Usage By Branch.xlsx
@@ -24,7 +24,7 @@ services:
       - WS_HIDDEN_RENAME=Tele Stats
       - LAKE_ACCOUNT_NAME=
       - LAKE_ACCOUNT_KEY=
-      - LAKE_CONTAINER_NAME=
+      - LAKE_CONTAINER_NAME=enterprisedata
       - LAKE_FOLDER_PATH=Raw/BOX Reports
     volumes:
       - ./jupyter:/opt/box_service/local

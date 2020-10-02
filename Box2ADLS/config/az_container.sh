@@ -1,9 +1,9 @@
 #!/bin/bash -eux
 
 declare CONTAINER_GROUP="fusion-container-group"
-declare RESOURCE_GROUP="pahpocdev"
+declare RESOURCE_GROUP=""
 declare SUBSCRIPTION=""
-declare REGISTRY="PAHIntegrationRegistry"
+declare REGISTRY=""
 declare LOCATION="East US"
 declare IMAGE="box2adls"
 declare ENV_TENANT=""
@@ -67,10 +67,10 @@ declare YAML_CONFIG=~/personal/github/azure-methods/Box2ADLS/config/box2adls.yml
 #  --verbose
 
 # Start container instance
-#az container start -n $CONTAINER_GROUP \
-#  --resource-group $RESOURCE_GROUP \
-#  --subscription $SUBSCRIPTION \
-#  --verbose --debug
+az container start -n $CONTAINER_GROUP \
+  --resource-group $RESOURCE_GROUP \
+  --subscription $SUBSCRIPTION \
+  --verbose --debug
 
 # Assign security role to a principal.
 #az role assignment create \

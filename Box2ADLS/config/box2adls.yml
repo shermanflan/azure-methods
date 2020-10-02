@@ -14,12 +14,28 @@ properties: # Properties of container group
         secureValue: ""
       - name: BOX_FOLDER_PATH
         value: "Utilization Reports/Daily Schedule Status Reports/2020 Reports"
+      - name: BOX_FOLDER_PATH2
+        value: "Utilization Reports/Weekly Utilization Reports/{0} Reports"
       - name: BOX_FILE_MASK
         value: "Branch Scheduled Hours Breakdown_{0}.xlsx"
+      - name: BOX_FILE_MASK2
+        value: "Telephony Usage By Branch {0}.xlsx"
       - name: BOX_FILE_RENAME
         value: "Branch Scheduled Hours Breakdown.xlsx"
+      - name: WS_PREV_NAME
+        value: "PriorMonth"
+      - name: WS_CURR_NAME
+        value: "CurrentMonth"
+      - name: WS_NEXT_NAME
+        value: "NextMonth"
+      - name: BOX_FILE_RENAME2
+        value: "Telephony Usage By Branch.xlsx"
+      - name: WS_HIDDEN_NAME
+        value: "{0} Tele Stats"
+      - name: WS_HIDDEN_RENAME
+        value: "Tele Stats"
       - name: LAKE_ACCOUNT_NAME
-        value: "pahintegrationstorage"
+        value: ""
       - name: LAKE_ACCOUNT_KEY
         secureValue: ""
       - name: LAKE_CONTAINER_NAME

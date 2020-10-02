@@ -23,7 +23,7 @@ BOX_MASK = environ.get('BOX_FILE_MASK',
 BOX_MASK2 = environ.get('BOX_FILE_MASK2',
                         'Telephony Usage By Branch {0}.xlsx').format(_day_suffix2)
 BOX_RENAME = environ.get('BOX_FILE_RENAME', 'Branch Scheduled Hours Breakdown.xlsx')
-TAB_NAME_PREV = environ.get('WS_PREV_NAME', 'PreviousMonth')
+TAB_NAME_PREV = environ.get('WS_PREV_NAME', 'PriorMonth')
 TAB_NAME_CURR = environ.get('WS_CURR_NAME', 'CurrentMonth')
 TAB_NAME_NEXT = environ.get('WS_NEXT_NAME', 'NextMonth')
 BOX_RENAME2 = environ.get('BOX_FILE_RENAME2', 'Telephony Usage By Branch.xlsx')
