@@ -3,22 +3,25 @@ import json
 import os
 from subprocess import run, CalledProcessError
 
+import click
+
 from utility import LOG_MAP, METRIC_MAP
 from utility import log
 
 logger = logging.getLogger(__name__)
 
 
-def get_by_tag(subscription, tag_name, tag_value=None,
+def get_by_tag(subscription, tag_name, tag_value,
                resource_group=None, resource_type=None):
     """
-    Get resources by tag.
+    Get resources by tag. Each resource should have a tag named
+    'auto-monitor' in order to be configured for automation.
 
-    :param subscription:
-    :param resource_group:
-    :param resource_type:
-    :param tag_name:
-    :param tag_value:
+    :param subscription: The subscription id
+    :param tag_name: Refers to the preconfigured resource tag
+    :param tag_value: Refers to the preconfigured resource tag value
+    :param resource_group: The resource group
+    :param resource_type: The resource type
     :return: list of resource ids.
     """
     az_cmd = [
@@ -43,24 +46,64 @@ def get_by_tag(subscription, tag_name, tag_value=None,
 
         for f in resources:
             if f['tags'] and tag_name in f['tags'] \
-                    and (not tag_value or tag_value == f['tags'][tag_name]):
+                    and tag_value == f['tags'][tag_name]:
                 resource_ids.append((f['id'], f['type']))
 
         return resource_ids
     except CalledProcessError as e:
 
         logger.exception(e)
+
         raise
 
 
-def is_monitored(resource_id):
+def add_diagnostics(name, subscription, workspace_id, tag_name,
+                    tag_value):
+    """
+    Adds the specified diagnostic setting to all resources with the
+    specified tag/value pair.
+
+    :param name: The diagnostic setting name
+    :param subscription: The Azure subscription id
+    :param workspace_id: The Log Analytics workspace id
+    :param tag_name: The specified resource tag name
+    :param tag_value: The specified resource tag value
+    :return: None
+    """
+    resources = get_by_tag(subscription, tag_name, tag_value)
+
+    click.echo(f'Found {len(resources)} resources.')
+
+    for rid, category in resources:
+        if not is_monitored(name, rid):
+            add_diagnostic(name, rid, category, workspace_id)
+
+
+def remove_diagnostics(name, subscription, tag_name, tag_value):
+    """
+    Removes the specified diagnostic setting from all resources with the
+    specified tag/value pair.
+
+    :param name: The diagnostic setting name
+    :param subscription: The Azure subscription id
+    :param tag_name: The specified resource tag name
+    :param tag_value: The specified resource tag value
+    :return: None
+    """
+    resources = get_by_tag(subscription, tag_name, tag_value)
+
+    click.echo(f'Found {len(resources)} resources.')
+
+    for rid, category in resources:
+        if is_monitored(name, rid):
+            remove_diagnostic(name, rid)
+
+
+def has_diagnostics(resource_id):
     """
     Check if resource_id has at least one diagnostic setting.
 
-    # TODO:
-    Add diagnostic name filter
-
-    :param resource_id:
+    :param resource_id: The resource id
     :return: True or False
     """
     az_cmd = [
@@ -84,15 +127,44 @@ def is_monitored(resource_id):
         raise
 
 
+def is_monitored(name, resource_id):
+    """
+    Check if resource_id has the specified diagnostic setting.
+
+    :param name: the name of the diagnostic setting
+    :param resource_id: the resource id
+    :return: True or False
+    """
+    az_cmd = [
+        'az', 'monitor', 'diagnostic-settings', 'show',
+        '--name', name,
+        '--resource', resource_id,
+    ]
+
+    try:
+        resource = os.path.split(resource_id)[1]
+        result = run(az_cmd, shell=False, capture_output=True, check=True,
+                     encoding="utf-8", text=True)
+
+        end_brace = max(result.stdout.rfind(']'), result.stdout.rfind('}'))
+        trimmed = result.stdout[:end_brace+1]
+        resource = json.loads(trimmed)
+
+        return True if resource['name'] else False
+
+    except CalledProcessError as e:
+
+        click.echo(f'Diagnostic [{name}] does not exist for [{resource}].')
+        return False
+
+
 def remove_diagnostic(name, resource_id):
     """
+    Remove the diagnostic setting from the specified resource.
 
-    TODO:
-    Assert diagnostic exists
-
-    :param name:
-    :param resource_id:
-    :return:
+    :param name: The diagnostic setting name
+    :param resource_id: The resource id
+    :return: None
     """
     try:
         az_cmd = [
@@ -105,7 +177,7 @@ def remove_diagnostic(name, resource_id):
 
         run(az_cmd, check=True)
 
-        logger.debug(f'Removed {name} from {os.path.split(resource_id)[1]}.')
+        click.echo(f'Removed {name} from {os.path.split(resource_id)[1]}.')
 
     except CalledProcessError as e:
 
@@ -113,39 +185,20 @@ def remove_diagnostic(name, resource_id):
         raise
 
 
-def add_diagnostics(name, subscription, workspace_id, tag_name, tag_value):
-    """
-
-    :param name:
-    :param subscription:
-    :param workspace_id:
-    :param tag_name:
-    :param tag_value:
-    :return:
-    """
-    resources = get_by_tag(subscription, tag_name, tag_value)
-
-    logger.debug(f'Returned {len(resources)} resources.')
-
-    for rid, category in resources:
-        if not is_monitored(rid):
-            add_diagnostic(name, rid, category, workspace_id)
-
-
 def add_diagnostic(name, resource_id, category, workspace_id,
                    log_map=LOG_MAP, metric_map=METRIC_MAP):
     """
+    Adds the diagnostic setting to the specified resource.
 
-    TODO:
-    Assert diagnostic does not exist.
-
-    :param name:
-    :param resource_id:
-    :param category:
-    :param workspace_id:
-    :param log_map:
-    :param metric_map:
-    :return:
+    :param name: The diagnostic setting name
+    :param resource_id: The resource id
+    :param category: The resource type
+    :param workspace_id: The log analytics workspace id
+    :param log_map: Mapping between resource type and log
+    configuration
+    :param metric_map: Mapping between resource type and
+    metric configuration
+    :return: None
     """
     az_cmd = [
         'az', 'monitor', 'diagnostic-settings', 'create',
@@ -164,7 +217,7 @@ def add_diagnostic(name, resource_id, category, workspace_id,
     try:
         run(az_cmd, check=True)
 
-        logger.debug(f'Added {name} to {os.path.split(resource_id)[1]}.')
+        click.echo(f'Added {name} to {os.path.split(resource_id)[1]}.')
 
     except CalledProcessError as e:
 
