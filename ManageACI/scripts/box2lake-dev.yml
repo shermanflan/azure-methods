@@ -1,0 +1,56 @@
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-reference-yaml
+name: box-container-test  # Name of the container group
+apiVersion: 2018-10-01
+location: "East US"
+properties: # Properties of container group
+  containers: # Array of container instances in the group
+  - name: box2lake # Name of an instance
+    properties: # Properties of an instance
+      image: rkoregistry.azurecr.io/box2lake:latest # Container image used to create the instance
+      environmentVariables:
+      - name: APP_INSIGHTS_KEY
+        secureValue: ""
+      - name: APP_LOG_KEY
+        value: rko.aci.box2lake.dev
+      - name: LOG_LEVEL
+        value: DEBUG
+      - name: BOX_FOLDER_PATH
+        value: "Utilization Reports/Daily Schedule Status Reports/2020 Reports"
+      - name: BOX_FOLDER_PATH2
+        value: "Utilization Reports/Weekly Utilization Reports/{0} Reports"
+      - name: BOX_FILE_MASK
+        value: "Branch Scheduled Hours Breakdown_{0}.xlsx"
+      - name: BOX_FILE_MASK2
+        value: "Telephony Usage By Branch {0}.xlsx"
+      - name: BOX_FILE_RENAME
+        value: "Branch Scheduled Hours Breakdown.xlsx"
+      - name: WS_PREV_NAME
+        value: "PriorMonth"
+      - name: WS_CURR_NAME
+        value: "CurrentMonth"
+      - name: WS_NEXT_NAME
+        value: "NextMonth"
+      - name: BOX_FILE_RENAME2
+        value: "Telephony Usage By Branch.xlsx"
+      - name: WS_HIDDEN_NAME
+        value: "{0} Tele Stats"
+      - name: WS_HIDDEN_RENAME
+        value: "Tele Stats"
+      - name: LAKE_ACCOUNT_NAME
+        value: "airflowstoragesandbox"
+      - name: LAKE_ACCOUNT_KEY
+        secureValue: ""
+      - name: LAKE_CONTAINER_NAME
+        value: "enterprisedata"
+      - name: LAKE_FOLDER_PATH
+        value: "Raw/BOX Reports"
+      resources: # Resource requirements of the instance
+        requests:
+          memoryInGB: 1
+          cpu: 1
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server: rkoregistry.azurecr.io
+    username: rkoregistry
+    password: ""
+  restartPolicy: Never
+  osType: Linux
