@@ -1,0 +1,15 @@
+azure-storage-file-datalake==12.1.2
+fastparquet==0.4.1
+#jupyter
+numpy
+opencensus-ext-azure==1.0.5
+openpyxl==3.0.5
+pandas
+Pygments==2.6.1
+python-snappy==0.5.4
+#pyodbc
+#pytest
+requests==2.24.0
+#sqlalchemy
+structlog==20.1.0
+tenacity==6.2.0

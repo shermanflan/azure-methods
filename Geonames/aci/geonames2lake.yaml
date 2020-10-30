@@ -1,0 +1,50 @@
+# https://docs.microsoft.com/en-us/azure/container-instances/container-instances-reference-yaml
+name: geonames-container-group  # Name of the container group
+apiVersion: 2018-10-01
+location: "East US"
+properties: # Properties of container group
+  containers: # Array of container instances in the group
+  - name: geonames2lake # Name of an instance
+    properties: # Properties of an instance
+      image: abccontainerregistry.azurecr.io/geonames2lake:latest # Container image used to create the instance
+      environmentVariables:
+      - name: APP_LOG_KEY
+        value: "bhs.aci.geonames2lake.dev"
+      - name: APP_INSIGHTS_KEY
+        value: ""
+      - name: LOG_LEVEL
+        value: "DEBUG"
+      - name: CENSUS_STATES_URI
+        value: "https://www2.census.gov/programs-surveys/popest/geographies/2019/state-geocodes-v2019.xlsx"
+      - name: CENSUS_COUNTIES_URI
+        value: "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2019_Gazetteer/2019_Gaz_counties_national.zip"
+      - name: GEONAMES_PLACES_URI
+        value: "https://download.geonames.org/export/dump/US.zip"
+      - name: GEONAMES_ZIPCODES_URI
+        value: "http://download.geonames.org/export/zip/US.zip"
+      - name: CENSUS_STATE_NAME
+        value: "MasterData.StateTerritory"
+      - name: CENSUS_COUNTY_NAME
+        value: "MasterData.CountyProvince"
+      - name: GEONAMES_PLACE_NAME
+        value: "MasterData.GeoPlace"
+      - name: GEONAMES_ZIPCODE_NAME
+        value: "MasterData.ZipCode"
+      - name: LAKE_ACCOUNT_NAME
+        value: "enterprisedatalakedev"
+      - name: LAKE_ACCOUNT_KEY
+        secureValue: ""
+      - name: LAKE_CONTAINER_NAME
+        value: "enterprisedata"
+      - name: LAKE_BASE_PATH
+        value: "Raw/Master Data/Geography/Brightspring"
+      resources: # Resource requirements of the instance
+        requests:
+          memoryInGB: 4
+          cpu: 2
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server:
+    username:
+    password: ""
+  restartPolicy: Never
+  osType: Linux
