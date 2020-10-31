@@ -29,9 +29,9 @@ def get_places(tmp_folder):
     Downloads place names from geonames.org at:
     - https://download.geonames.org/export/dump/
 
-    In order to facilitate matching with zip codes data set, all synonyms
-    are exploded into distinct rows. In addition, the modified date
-    field is converted to numeric.
+    In order to facilitate matching with the zip codes data set, all
+    synonyms are exploded into distinct rows. In addition, the modified
+    date field is converted to numeric.
 
     :param tmp_folder: temporary workspace
     :return: DataFrame

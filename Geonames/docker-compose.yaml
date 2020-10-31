@@ -11,8 +11,8 @@ services:
 #      - ACCEPT_EULA=Y
 #      - SA_PASSWORD=HelloWorld1
 #      - MSSQL_PID=Developer
-  app-geonames:
-    image: app-geonames
+  rko-geonames:
+    image: rko-geonames
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,8 +33,8 @@ services:
         - CENSUS_COUNTY_NAME=MasterData.CountyProvince
         - GEONAMES_PLACE_NAME=MasterData.GeoPlace
         - GEONAMES_ZIPCODE_NAME=MasterData.ZipCode
-        - LAKE_ACCOUNT_NAME=enterprisedatalakedev
+        - LAKE_ACCOUNT_NAME=airflowstoragesandbox
         - LAKE_CONTAINER_NAME=enterprisedata
-        - LAKE_BASE_PATH=Raw/Master Data/Geography/Brightspring
+        - LAKE_BASE_PATH=Raw/MasterData/Geography/Brightspring
     volumes:
       - ./jupyter:/opt/geonames-service/local

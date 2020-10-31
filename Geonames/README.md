@@ -11,7 +11,8 @@ and [geonames.org](http://download.geonames.org/export/zip/).
     - [geonames_ex.ipynb](jupyter/geonames_ex.ipynb):
         - `pandas.explode()` function to convert csv columns to rows
 - Example [data model](db/scripts) 
-using temporal tables and unicode handling for collation and indexing
+using temporal tables and unicode columns with appropriate collation and
+indexing
 
 ## Features
 - Uses pandas and requests to download and transform data files

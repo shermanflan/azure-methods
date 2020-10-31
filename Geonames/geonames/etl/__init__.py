@@ -17,8 +17,8 @@ logger = get_logger(__name__)
 def load_datasets(tmp_folder):
     """
     Entrypoint for downloading all geography data sets. Each dataset is
-    data wrangled into a DataFrame and then save locally in parquet
-    format. The files are then uploaded to the data lake.
+    data wrangled into a DataFrame and then saved locally in parquet
+    format. The files are then uploaded to a data lake.
 
     :param tmp_folder: temporary workspace
     :return: None
@@ -27,7 +27,7 @@ def load_datasets(tmp_folder):
 
     counties = get_counties()
     states = get_states(counties)
-    places = get_places(tmp_folder)
+    # places = get_places(tmp_folder)
     zipcodes = get_zipcodes(tmp_folder)
 
     date_stamp = date.today().strftime('%Y-%m-%d')
@@ -49,12 +49,11 @@ def load_datasets(tmp_folder):
     counties.to_parquet(path=counties_path, engine='fastparquet'
                         , compression='snappy', index=True)
 
-    places_path = join(tmp_folder
-                       , f"{GEONAMES_PLACE_NAME}_{date_stamp}.parquet")
-    logger.debug('Saving places', source=places_path)
-
-    places.to_parquet(path=places_path, engine='fastparquet'
-                      , compression='snappy')
+    # places_path = join(tmp_folder
+    #                    , f"{GEONAMES_PLACE_NAME}_{date_stamp}.parquet")
+    # logger.debug('Saving places', source=places_path)
+    # places.to_parquet(path=places_path, engine='fastparquet'
+    #                   , compression='snappy')
 
     zipcodes_path = join(tmp_folder
                          , f"{GEONAMES_ZIPCODE_NAME}_{date_stamp}.parquet")
@@ -68,8 +67,8 @@ def load_datasets(tmp_folder):
     lake_paths = [
         (join(LAKE_CENSUS_PATH, CENSUS_COUNTY_NAME, year_stamp)
            , counties_path)
-        , (join(LAKE_GEONAMES_PATH, GEONAMES_PLACE_NAME, year_stamp)
-           , places_path)
+        # , (join(LAKE_GEONAMES_PATH, GEONAMES_PLACE_NAME, year_stamp)
+        #    , places_path)
         , (join(LAKE_GEONAMES_PATH, GEONAMES_ZIPCODE_NAME, year_stamp)
            , zipcodes_path)
         , (join(LAKE_CENSUS_PATH, CENSUS_STATE_NAME, year_stamp)
