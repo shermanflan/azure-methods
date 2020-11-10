@@ -35,6 +35,6 @@ services:
         - GEONAMES_ZIPCODE_NAME=MasterData.ZipCode
         - LAKE_ACCOUNT_NAME=airflowstoragesandbox
         - LAKE_CONTAINER_NAME=enterprisedata
-        - LAKE_BASE_PATH=Raw/MasterData/Geography/Brightspring
+        - LAKE_BASE_PATH=Raw/Master Data/Geography/Brightspring
     volumes:
       - ./jupyter:/opt/geonames-service/local
