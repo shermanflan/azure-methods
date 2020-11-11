@@ -1,0 +1,26 @@
+version: "3"
+services:
+  crm-client:
+    image: crm-client
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8888:8888
+    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
+    env_file:
+      - .env
+    environment:
+      - AUTHORITY=https://login.microsoftonline.com
+      - CRM_RESOURCE=https://pahsb00.crm.dynamics.com
+      - CI_API_RESOURCE=https://prod-eus-01.api.ci.ai.dynamics.com
+      - CI_INSTANCE_ID=adbd6cb4-3c68-4700-9894-fc113878a6c0
+      - DB_DRIVER={ODBC Driver 17 for SQL Server}
+      - DB_SERVER=
+      - DB=
+      - DB_USER=
+      # Escapes '$'
+      - DB_PWD=
+    volumes:
+      - ./jupyter:/opt/crm_service/local
+

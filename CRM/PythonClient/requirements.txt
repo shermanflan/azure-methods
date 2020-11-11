@@ -1,0 +1,6 @@
+adal
+jupyter
+numpy
+pandas
+requests
+#pyodbc
