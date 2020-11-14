@@ -4,6 +4,7 @@ import logging
 from os.path import split, join
 from tempfile import TemporaryDirectory
 
+from box2adls import RELATIVE_DATE
 from box2adls.exceptions import FolderMissingError
 import box2adls.logging
 from box2adls.util import get_last_friday
@@ -47,17 +48,17 @@ class EtlOperations:
         :param next_label: New name of next month tab
         :return: None
         """
-        today = date.today()
-        prev_month = today.replace(day=1) - timedelta(days=1)
+        from_date = RELATIVE_DATE
+        prev_month = from_date.replace(day=1) - timedelta(days=1)
 
-        if today.month == 12:
-            next_month = today.replace(year=today.year + 1, month=1)
+        if from_date.month == 12:
+            next_month = from_date.replace(year=from_date.year + 1, month=1)
         else:
-            next_month = today.replace(month=today.month + 1, day=1)
+            next_month = from_date.replace(month=from_date.month + 1, day=1)
 
         partial_transform = partial(transform_daily,
                                     months=[prev_month.strftime("%B"),
-                                            today.strftime("%B"),
+                                            from_date.strftime("%B"),
                                             next_month.strftime("%B")],
                                     labels=[prev_label, curr_label, next_label])
 
@@ -75,16 +76,18 @@ class EtlOperations:
         :param tab_rename: new tab name
         :return: None
         """
-        today = date.today()
-        last_friday = get_last_friday(today)
-        source_week = join(source, last_friday.strftime("%B - %d"))
+        # today = RELATIVE_DATE
+        # last_friday = get_last_friday(today)
+        # source_week = join(source, last_friday.strftime("%B - %d"))
 
-        partial_transform = partial(transform_weekly, tab_name, tab_rename)
+        partial_transform = partial(transform_weekly, tab_name,
+                                    tab_rename)
 
-        self.box_to_lake(source_week, source_mask, source_rename,
+        self.box_to_lake(source, source_mask, source_rename,
                          partial_transform)
 
-    def box_to_lake(self, source, source_mask, source_rename, transform):
+    def box_to_lake(self, source, source_mask, source_rename,
+                    transform):
         """
         Routine which copies and transforms files from Box to the lake.
 

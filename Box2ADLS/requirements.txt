@@ -6,7 +6,8 @@ boxsdk
 openpyxl
 #pandas
 #pyodbc
-pytest
+#pytest
+redis
 requests
 
 --pre

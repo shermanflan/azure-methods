@@ -22,7 +22,7 @@ def transform_daily(months, labels, source):
     """
     logger.info(f'Renaming worksheet tabs for {split(source)[1]}')
 
-    wb = load_workbook(filename=source)
+    wb = load_workbook(filename=source, data_only=True)
 
     for name, label in zip(months, labels):
         if name in wb:
@@ -45,7 +45,7 @@ def transform_weekly(tab_name, tab_rename, source):
     """
     logger.info(f'Enabling worksheet for {split(source)[1]}')
 
-    wb = load_workbook(filename=source)
+    wb = load_workbook(filename=source, data_only=True)
 
     if tab_name in wb:
         ws = wb[tab_name]

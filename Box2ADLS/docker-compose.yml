@@ -1,30 +1,37 @@
 version: "3"
 services:
-  box2adls:
-    image: box2adls
+  redis-kv:
+      image: redis:6.0
+      ports:
+          - 6379:6379
+  rko-box2adls:
+    image: rko-box2adls
     build:
       context: .
       dockerfile: Dockerfile
-#    ports:
-#      - 8888:8888
-#    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
+    ports:
+      - 8888:8888
+    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
+    depends_on:
+      - redis-kv
+    env_file:
+      - .env
     environment:
-      - BOX_USER_ID=
-      - BOX_FOLDER_ID=
-      - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/{0} Reports
-      - BOX_FOLDER_PATH2=Utilization Reports/Weekly Utilization Reports/{0} Reports
-      - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_{0}.xlsx
-      - BOX_FILE_MASK2=Telephony Usage By Branch {0}.xlsx
-      - BOX_FILE_RENAME=Branch Scheduled Hours Breakdown.xlsx
+      - SIMMER=True
+      - BROKER_URL=redis://redis-kv:6379/0
+      - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/2020 Reports/11-November
+      - BOX_FOLDER_PATH2=Utilization Reports/Weekly Utilization Reports/2020 Reports/11-November/November - 13
+      - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_11_14_2020.xlsx
+      - BOX_FILE_MASK2=Telephony Usage By Branch 11.13.2020.xlsx
+      - BOX_FILE_RENAME=Branch Scheduled Hours Breakdown_airflow.xlsx
       - WS_PREV_NAME=PriorMonth
       - WS_CURR_NAME=CurrentMonth
       - WS_NEXT_NAME=NextMonth
-      - BOX_FILE_RENAME2=Telephony Usage By Branch.xlsx
+      - BOX_FILE_RENAME2=Telephony Usage By Branch_airflow.xlsx
       - WS_HIDDEN_NAME={0} Tele Stats
       - WS_HIDDEN_RENAME=Tele Stats
-      - LAKE_ACCOUNT_NAME=
-      - LAKE_ACCOUNT_KEY=
       - LAKE_CONTAINER_NAME=enterprisedata
       - LAKE_FOLDER_PATH=Raw/BOX Reports
     volumes:
       - ./jupyter:/opt/box_service/local
+      - ./config:/opt/box_service/config
