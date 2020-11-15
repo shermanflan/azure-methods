@@ -1,24 +1,24 @@
 version: "3"
 services:
-  redis-kv:
-      image: redis:6.0
-      ports:
-          - 6379:6379
+#  redis-kv:
+#      image: redis:6.0
+#      ports:
+#          - 6379:6379
   rko-box2adls:
     image: rko-box2adls
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - 8888:8888
-    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
-    depends_on:
-      - redis-kv
+#    ports:
+#      - 8888:8888
+#    command: "jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.token=''"
+#    depends_on:
+#      - redis-kv
     env_file:
       - .env
     environment:
       - SIMMER=True
-      - BROKER_URL=redis://redis-kv:6379/0
+      - BROKER_URL=redis://localhost:6379/0
       - BOX_FOLDER_PATH=Utilization Reports/Daily Schedule Status Reports/2020 Reports/11-November
       - BOX_FOLDER_PATH2=Utilization Reports/Weekly Utilization Reports/2020 Reports/11-November/November - 13
       - BOX_FILE_MASK=Branch Scheduled Hours Breakdown_11_14_2020.xlsx

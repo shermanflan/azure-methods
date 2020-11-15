@@ -10,7 +10,7 @@ from box2adls.util import get_last_friday
 # _month_folder = date.today().strftime("%m-%B")
 # _day_suffix = date.today().strftime("%m_%d_%Y")
 # _day_suffix2 = get_last_friday(date.today()).strftime("%m.%d.%Y")
-SIMMER = bool(environ.get('SIMMER', 'False'))
+SIMMER = True if environ.get('SIMMER', 'True') == 'True' else False
 BROKER_URL = environ.get('BROKER_URL', 'redis://localhost:6379/0')
 
 BOX_CONFIG = environ.get('BOX_CONFIG', 'config/my_config.json')
