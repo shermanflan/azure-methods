@@ -26,12 +26,12 @@ async def get_meds(cnxn_str, name, limit=500):
             cursor = cnxn.cursor()
 
             qry1 = """
-                SELECT  ID
-                        , NAME
-                        , DOSE
-                FROM    [dbo].[GlobalMedList] WITH (READUNCOMMITTED)
-                WHERE   NAME LIKE ?
-                ORDER BY ID
+                SELECT  Id
+                        , ProductBrandName
+                        , PackageSize
+                FROM    [MasterData].[ActiveProduct] WITH (READUNCOMMITTED)
+                WHERE   ProductLabelName LIKE ?
+                ORDER BY Id
                 OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY
                 FOR JSON PATH;
             """    

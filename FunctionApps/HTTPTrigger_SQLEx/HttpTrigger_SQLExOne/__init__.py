@@ -25,10 +25,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 cursor = cnxn.cursor()
 
                 qry1 = """
-                    SELECT  ID
-                            , NAME
-                            , DOSE
-                    FROM    [dbo].[GlobalMedList] WITH (READUNCOMMITTED)
+                    SELECT  Id
+                            , ProductBrandName
+                            , PackageSize
+                    FROM    [MasterData].[ActiveProduct] WITH (READUNCOMMITTED)
                     WHERE   ID = ?
                     FOR JSON PATH;
                 """    
