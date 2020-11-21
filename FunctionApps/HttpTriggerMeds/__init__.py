@@ -13,7 +13,6 @@ async def get_meds(cnxn_str, name, limit=500):
     
     Enhancements:
     - Not sure async is working.
-
     :param cnxn_str: SQL connection
     :param name: name filter
     :param limit: limit filter
@@ -49,16 +48,7 @@ async def get_meds(cnxn_str, name, limit=500):
         pass
 
 
-async def main(req: func.HttpRequest): 
-    """
-    Inspired by:
-    https://github.com/Azure-Samples/azure-sql-db-python-rest-api/blob/master/app.py
-    https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python#async
-
-    :param req: the HttpRequest
-    :return: HttpResponse
-    """
-
+async def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
     name = req.params.get('name')

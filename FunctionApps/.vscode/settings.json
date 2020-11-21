@@ -1,9 +1,9 @@
 {
-    "azureFunctions.deploySubpath": "HTTPTrigger_SQLEx",
+    "azureFunctions.deploySubpath": ".",
     "azureFunctions.scmDoBuildDuringDeployment": true,
     "azureFunctions.pythonVenv": ".venv",
     "azureFunctions.projectLanguage": "Python",
     "azureFunctions.projectRuntime": "~3",
     "debug.internalConsoleOptions": "neverOpen",
-    "python.pythonPath": "HTTPTrigger_SQLEx/.venv/bin/python3.7"
+    "python.pythonPath": ".venv/bin/python"
 }
