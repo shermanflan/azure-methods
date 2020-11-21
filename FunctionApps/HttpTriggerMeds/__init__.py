@@ -6,8 +6,12 @@ import os
 import azure.functions as func
 import pyodbc
 
+from utility import SQLConnection
 
-async def get_meds(cnxn_str, name, limit=500):
+sql_client = SQLConnection('SQL_CONNECTION')
+
+
+def get_meds(name, limit=500):
     """
     Get a list of meds.
     
@@ -21,8 +25,7 @@ async def get_meds(cnxn_str, name, limit=500):
 
     try:
 
-        with pyodbc.connect(cnxn_str, autocommit=True) as cnxn:
-            cursor = cnxn.cursor()
+        with sql_client.get_conn().cursor() as cursor:
 
             qry1 = """
                 SELECT  Id
@@ -48,22 +51,25 @@ async def get_meds(cnxn_str, name, limit=500):
         pass
 
 
-async def main(req: func.HttpRequest) -> func.HttpResponse:
+def main(req: func.HttpRequest,
+         outputBlob: func.Out[func.InputStream]) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
     name = req.params.get('name')
     limit = req.params.get('limit', 500)
-    cnxn_str = os.environ['SQL_CONNECTION']
 
     if name and limit:
         logging.debug(f"TEST PARAM: {name}")
         logging.debug(f"TEST PARAM: {limit}")
 
-        payload = await get_meds(cnxn_str, name, limit)
+        payload = get_meds(name, limit)
 
         response = func.HttpResponse(body=payload, 
-                                        status_code=200,
-                                        mimetype='application/json')
+                                     status_code=200,
+                                     mimetype='application/json')
+        
+        logging.info('Saving payload as blob')
+        outputBlob.set(json.dumps(json.loads(payload), indent=4))
 
         return response
     else:

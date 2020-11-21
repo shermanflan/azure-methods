@@ -1,5 +1,6 @@
 {
   "version": "2.0",
+  "functionTimeout": "00:10:00",
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
@@ -16,5 +17,10 @@
     "http": {
       "routePrefix": "rxapi/v1"
     }
+  },
+  "retry": {
+    "strategy": "fixedDelay",
+    "maxRetryCount": 5,
+    "delayInterval": "00:00:30"
   }
 }

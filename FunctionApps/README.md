@@ -91,3 +91,8 @@ functions require
 4. The deployment is now complete
 
 ### Deployment via Func Tools CLI
+
+## Python Best Practices
+[TBD](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python)
+
+- Static [clients](https://docs.microsoft.com/en-us/azure/azure-functions/manage-connections#static-clients)

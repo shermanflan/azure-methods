@@ -2,10 +2,10 @@
   "scriptFile": "__init__.py",
   "bindings": [
     {
+      "name": "req",
       "authLevel": "function",
       "type": "httpTrigger",
       "direction": "in",
-      "name": "req",
       "methods": [
         "get",
         "post"
@@ -13,9 +13,16 @@
       "route": "meds"
     },
     {
+      "name": "$return",
       "type": "http",
+      "direction": "out"
+    },
+    {
+      "name": "outputBlob",
+      "type": "blob",
       "direction": "out",
-      "name": "$return"
+      "path": "httptriggermeds/{rand-guid}",
+      "connection": "AzureWebJobsStorage"
     }
   ]
 }
