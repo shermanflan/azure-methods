@@ -15,12 +15,13 @@
   },
   "extensions": {
     "http": {
-      "routePrefix": "rxapi/v1"
+      "routePrefix": "rkoapi/v1"
     }
   },
   "retry": {
-    "strategy": "fixedDelay",
+    "strategy": "exponentialBackoff",
     "maxRetryCount": 5,
-    "delayInterval": "00:00:30"
+    "minimumInterval": "00:00:30",
+    "maximumInterval": "00:15:00"
   }
 }

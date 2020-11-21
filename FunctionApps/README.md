@@ -67,6 +67,19 @@ function app as shown below.
   }
 }
 ```
+Retry [settings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-error-pages?tabs=python#exponential-backoff-retry) 
+can also be declared as follows.
+```
+{
+  "version": "2.0",
+  "retry": {
+    "strategy": "exponentialBackoff",
+    "maxRetryCount": 5,
+    "minimumInterval": "00:00:30",
+    "maximumInterval": "00:15:00"
+  }
+}
+```
 ### [local.settings.json](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code?tabs=csharp#local-settings-file)
 Maintains local project settings such as connections strings. Only used 
 when running locally.
@@ -74,9 +87,17 @@ when running locally.
 - Set the `Values.AzureWebJobsStorage` key to a valid Azure Storage account 
 connection string if testing Functions other than HttpTriggers.
 
+
+### Add a new function
+To add a new function to an existing VS Code project, follow these steps.
+
+1. From the Azure Functions sidebar, select `Create Function`
+2. Select from the available templates
+3. Project settings should now be updated
+
 ## Deployment to Azure
 Deployment to Azure can be automated via the Core Tools CLI or directly
-in VS Code. Both options will be explored here.
+in VS Code.
 
 ### Deployment via VS Code
 This is a convenient option for deploying the Azure Functions to Azure.
@@ -91,8 +112,79 @@ functions require
 4. The deployment is now complete
 
 ### Deployment via Func Tools CLI
+TBD
 
 ## Python Best Practices
-[TBD](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python)
 
+- [General](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python)
 - Static [clients](https://docs.microsoft.com/en-us/azure/azure-functions/manage-connections#static-clients)
+- [Asynchronous](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python#async) 
+patterns:
+    - [aiohttp](https://pypi.org/project/aiohttp/)
+    - [janus](https://pypi.org/project/janus/)
+    - [aysncio](https://docs.python.org/3/library/asyncio-stream.html)
+- [Functions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-best-practices)
+
+## Function Types
+### HttpTrigger
+#### Trigger
+An HttpTrigger responds to GET, POST, etc verbs. To setup a custom route,
+modify the `function.json` with a `route` setting.
+```
+"bindings": [
+    {
+      "name": "req",
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "route": "meds"
+    }
+...
+```
+In addition, if a route prefix is needed, then modify the `host.json` file
+with an `http` extension as follows.
+```
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[1.*, 2.0.0)"
+  },
+  "extensions": {
+    "http": {
+      "routePrefix": "rxapi/v1"
+    }
+  }
+...
+```
+### [EventGrid](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid)
+#### Pre-requisites
+
+#### Trigger
+TBD
+#### Input
+TBD
+#### Output
+TBD
+
+### Blob Storage
+#### Trigger
+TBD
+#### Input
+TBD
+#### Output
+A function can use a Blob container as an output binding. First, setup 
+the `function.json` binding as follows.
+```
+{
+  "name": "outputBlob",
+  "type": "blob",
+  "direction": "out",
+  "path": "httptriggermeds/{rand-guid}",
+  "connection": "AzureWebJobsStorage"
+}
+```
+The blob can then be referenced as `func.InputStream` variable as shown in
+the [example](HttpTriggerMeds/__init__.py).

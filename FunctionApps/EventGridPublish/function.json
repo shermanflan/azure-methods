@@ -1,0 +1,28 @@
+{
+  "scriptFile": "__init__.py",
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    },
+    {
+      "type": "eventGrid",
+      "name": "outputEvent",
+      "topicEndpointUri": "JobEventsGridTopicUriSetting",
+      "topicKeySetting": "JobEventsGridTopicKeySetting",
+      "direction": "out"
+    }
+  ]
+}
