@@ -12,9 +12,9 @@ az eventgrid topic create \
     --resource-group "${RESOURCE_GROUP}" \
     --subscription "${SUBSCRIPTION}" \
     --input-schema eventgridschema \
-    --sku basic \
     --public-network-access enabled
 
+    # --sku premium \
     # --identity {noidentity, systemassigned}
     # --inbound-ip-rules
     # --input-mapping-default-values
@@ -32,10 +32,10 @@ declare TOPIC_ID=$(az eventgrid topic show \
                     --name "${EVENT_GRID_TOPIC}" \
                     --resource-group "${RESOURCE_GROUP}" \
                     --subscription "${SUBSCRIPTION}" | jq -r '.id')
+
 echo "${TOPIC_ID} created"
 echo "Topic key is ${TOPIC_KEY}"
-
-echo "Creating event grid subscription for ${TOPIC_ID}"
+echo "Creating event grid subscription ${EVENT_GRID_SUBSCRIPTION}"
 
 az eventgrid event-subscription create \
     --name "${EVENT_GRID_SUBSCRIPTION}" \
@@ -63,12 +63,3 @@ az eventgrid event-subscription create \
     # --max-events-per-batch
     # --preferred-batch-size-in-kilobytes
     # --subject-ends-with
-
-# echo "Cleaning up ${RESOURCE_GROUP}"
-# az group delete \
-#     --name "${RESOURCE_GROUP}"
-
-# az functionapp delete \
-#     --name "${FUNCTIONAPP}" \
-#     --resource-group "${RESOURCE_GROUP}" \
-#     --subscription "${SUBSCRIPTION}"

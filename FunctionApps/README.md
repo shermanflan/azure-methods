@@ -175,12 +175,15 @@ script assumes an Azure blob container exists to which it can send dead
 letters. 
 
 The topic is configured with normal settings including public network 
-access. This would probably need to be filtered for specific IP CIDR values 
-in production. The subscription is configured with custom event types and
-subject filtering. Standard retry and TTL is also configured. The advanced
+access. The topic is protected via secret token so the endpoint is secure. 
+For additional security, a private endpoint over a vnet can be configured
+although this capability is still in preview as of this [writing](https://docs.microsoft.com/en-us/azure/event-grid/configure-private-endpoints). 
+The subscription is configured with custom event types and subject 
+filtering. Standard retry and TTL is also configured. The advanced
 [filtering](https://docs.microsoft.com/en-us/azure/event-grid/event-filtering#advanced-filtering) 
 option supports inspection of the message payload which may be useful in 
-custom routing scenarios, but is not explored here.
+custom routing scenarios as shown in this [example](https://docs.microsoft.com/en-us/azure/event-grid/scripts/event-grid-cli-resource-group-filter#sample-script---preview-extension), 
+but is not explored here.
 
 #### Trigger
 The [EventGridPublish](EventGridPublish/__init__.py) function is an HTTP
@@ -194,6 +197,29 @@ as a subscriber to the same topic. Its
 [function.json](EventGridPublish/function.json) includes an Event Grid 
 trigger input binding. In addition, for testing purposes it uses a blob 
 output binding as a destination where the message payload is written.
+
+#### Testing
+To trigger events, fire the [EventGridPublish](EventGridPublish/__init__.py) 
+function from client of your choice. To publish to the topic directly for
+testing purposes, send a POST to the topic endpoint with a `aeg-sas-key`
+header set to the topic access key. See this quickstart for [details](https://docs.microsoft.com/en-us/azure/event-grid/custom-event-quickstart#send-an-event-to-your-custom-topic).
+The request payload should similar to the following. Notice the payload
+is enclosed in JSON array.
+
+```
+[{
+    "id": "test-id-3",
+    "data": {
+        "tag1": "frompostman",
+        "tag2": "2"
+    },
+    "subject": "new-job-1",
+    "eventType": "new-job-event-1",
+    "eventTime": "2020-11-22T16:29:02.282524Z",
+    "dataVersion": "1.0"
+}]
+```
+A sample testing [script](scripts/az_sanity_test.sh) is included.
 
 ### Blob Storage
 #### Trigger
