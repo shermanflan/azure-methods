@@ -160,14 +160,40 @@ with an `http` extension as follows.
 ...
 ```
 ### [EventGrid](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-event-grid)
+The [EventGridPublish](EventGridPublish/__init__.py) and 
+[EventGridSubscribe](EventGridSubscribe/__init__.py) functions demonstrate 
+event driven integration via Event Grid as the messaging technology.
+
 #### Pre-requisites
+In order to run the proof of concept, an Event Grid topic and subscription
+need to exist. The topic is referenced as a binding in the function 
+trigger's [function.json](EventGridPublish/function.json) configuration. 
+The script [az_setup.sh](scripts/az_setup.sh) has been provided for the 
+purpose of setting up a test topic and subscription. Be sure to set the 
+environment variables according to your local Azure environment. The 
+script assumes an Azure blob container exists to which it can send dead 
+letters. 
+
+The topic is configured with normal settings including public network 
+access. This would probably need to be filtered for specific IP CIDR values 
+in production. The subscription is configured with custom event types and
+subject filtering. Standard retry and TTL is also configured. The advanced
+[filtering](https://docs.microsoft.com/en-us/azure/event-grid/event-filtering#advanced-filtering) 
+option supports inspection of the message payload which may be useful in 
+custom routing scenarios, but is not explored here.
 
 #### Trigger
-TBD
+The [EventGridPublish](EventGridPublish/__init__.py) function is an HTTP
+trigger setup to publish a message to the topic configured in the pre-
+requisites. Its [function.json](EventGridPublish/function.json) settings
+point to the topic id and key configured via an Event Grid output binding.
+
 #### Input
-TBD
-#### Output
-TBD
+The [EventGridSubscribe](EventGridSubscribe/__init__.py) function is setup
+as a subscriber to the same topic. Its 
+[function.json](EventGridPublish/function.json) includes an Event Grid 
+trigger input binding. In addition, for testing purposes it uses a blob 
+output binding as a destination where the message payload is written.
 
 ### Blob Storage
 #### Trigger

@@ -12,8 +12,8 @@ def main(req: func.HttpRequest,
     eventGridEvent = func.EventGridOutputEvent(
         id="test-id",
         data={"tag1": "value1", "tag2": "value2"},
-        subject="test-subject",
-        event_type="test-event-1",  # needs to exist (I think)
+        subject="new-job-1",
+        event_type="new-job-event-1",  # needs to exist (I think)
         event_time=datetime.datetime.utcnow(),
         data_version="1.0")
 
