@@ -2,6 +2,8 @@
 This repo contains a demonstration of serverless functions on Azure.
 
 ## Features
+- Web hook (HttpTrigger) with custom route and url prefix
+- Event based publish/subscribe using Event Grid
 
 ## Pre-requisites
 Using Azure Functions with Python has the following pre-requisites.
@@ -178,11 +180,10 @@ The topic is configured with normal settings including public network
 access. The topic is protected via secret token so the endpoint is secure. 
 For additional security, a private endpoint over a vnet can be configured
 although this capability is still in preview as of this [writing](https://docs.microsoft.com/en-us/azure/event-grid/configure-private-endpoints). 
-The subscription is configured with custom event types and subject 
-filtering. Standard retry and TTL is also configured. The advanced
-[filtering](https://docs.microsoft.com/en-us/azure/event-grid/event-filtering#advanced-filtering) 
-option supports inspection of the message payload which may be useful in 
-custom routing scenarios as shown in this [example](https://docs.microsoft.com/en-us/azure/event-grid/scripts/event-grid-cli-resource-group-filter#sample-script---preview-extension), 
+The subscription is configured with custom event types and [subject filtering](https://docs.microsoft.com/en-us/azure/event-grid/event-filtering#subject-filtering). 
+Standard retry and TTL is also configured. The [advanced filtering](https://docs.microsoft.com/en-us/azure/event-grid/event-filtering#advanced-filtering) 
+option supports inspection of the message payload, which may be useful in 
+custom routing scenarios as shown in this [example](https://docs.microsoft.com/en-us/azure/event-grid/scripts/event-grid-cli-resource-group-filter#sample-script---preview-extension) 
 but is not explored here.
 
 #### Trigger
@@ -200,11 +201,11 @@ output binding as a destination where the message payload is written.
 
 #### Testing
 To trigger events, fire the [EventGridPublish](EventGridPublish/__init__.py) 
-function from client of your choice. To publish to the topic directly for
-testing purposes, send a POST to the topic endpoint with a `aeg-sas-key`
-header set to the topic access key. See this quickstart for [details](https://docs.microsoft.com/en-us/azure/event-grid/custom-event-quickstart#send-an-event-to-your-custom-topic).
-The request payload should similar to the following. Notice the payload
-is enclosed in JSON array.
+function from a web client of your choice. To publish to the topic directly 
+for testing purposes, send a POST to the topic endpoint with a `aeg-sas-key`
+header set to the topic access key. See this user guide for [details](https://docs.microsoft.com/en-us/azure/event-grid/post-to-custom-topic).
+The request payload should be similar to the following [schema](https://docs.microsoft.com/en-us/azure/event-grid/event-schema). 
+Notice the payload is enclosed in a JSON array.
 
 ```
 [{
