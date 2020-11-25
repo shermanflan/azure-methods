@@ -12,9 +12,9 @@ def main(event: func.EventGridEvent,
         'topic': event.topic,
         'subject': event.subject,
         'event_type': event.event_type,
-    })
+    }, indent=4)
         
-    logging.info('Saving payload as blob')
-    outputBlob.set(json.dumps(json.loads(result), indent=4))
+    logging.info(f'Saving payload as blob: {result}')
+    outputBlob.set(result)
 
-    logging.info('Python EventGrid trigger processed an event: %s', result)
+    logging.info('Python EventGrid trigger processed an event')

@@ -6,7 +6,7 @@ import os
 import azure.functions as func
 import pyodbc
 
-from utility import SQLConnection
+from utility.api.sql import SQLConnection
 
 sql_client = SQLConnection('SQL_CONNECTION')
 
@@ -38,11 +38,13 @@ def get_meds(name, limit=500):
                 FOR JSON PATH;
             """    
             
-            # Retrieve single JSON object
+            # Iterate through result
             result = cursor.execute(qry1, name+'%', int(limit))
-            payload = result.fetchone() 
-        
-            return payload[0]
+            payload = ""
+            for row in result:
+                payload += row[0]
+
+            return payload
 
     except pyodbc.OperationalError as e:
         logging.error(f"{e.args[1]}")
@@ -56,11 +58,9 @@ def main(req: func.HttpRequest,
     logging.info('Python HTTP trigger function processed a request.')
 
     name = req.params.get('name')
-    limit = req.params.get('limit', 500)
+    limit = req.params.get('limit', 50)
 
     if name and limit:
-        logging.debug(f"TEST PARAM: {name}")
-        logging.debug(f"TEST PARAM: {limit}")
 
         payload = get_meds(name, limit)
 
@@ -68,7 +68,7 @@ def main(req: func.HttpRequest,
                                      status_code=200,
                                      mimetype='application/json')
         
-        logging.info('Saving payload as blob')
+        logging.info(f'Saving payload as blob: {payload}')
         outputBlob.set(json.dumps(json.loads(payload), indent=4))
 
         return response

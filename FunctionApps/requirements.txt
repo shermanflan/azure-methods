@@ -3,4 +3,6 @@
 # Manually managing azure-functions-worker may cause unexpected issues
 
 azure-functions
+azure-storage-file-datalake==12.1.2
 pyodbc==4.0.30
+zeep==4.0.0

@@ -35,8 +35,8 @@ declare TOPIC_ID=$(az eventgrid topic show \
 
 echo "${TOPIC_ID} created"
 echo "Topic key is ${TOPIC_KEY}"
-echo "Creating event grid subscription ${EVENT_GRID_SUBSCRIPTION}"
 
+echo "Creating event grid subscription ${EVENT_GRID_SUBSCRIPTION}"
 az eventgrid event-subscription create \
     --name "${EVENT_GRID_SUBSCRIPTION}" \
     --subscription "${SUBSCRIPTION}" \
@@ -48,6 +48,21 @@ az eventgrid event-subscription create \
     --event-ttl 3 \
     --included-event-types new-job-event-1 new-job-event-2 \
     --subject-begins-with new-job \
+    --subject-case-sensitive true \
+    --deadletter-endpoint ${DEAD_LETTER}
+
+echo "Creating event grid subscription ${EVENT_GRID_SUBSCRIPTION2}"
+az eventgrid event-subscription create \
+    --name "${EVENT_GRID_SUBSCRIPTION2}" \
+    --subscription "${SUBSCRIPTION}" \
+    --endpoint ${FUNCTION_ENDPOINT2} \
+    --endpoint-type azurefunction \
+    --event-delivery-schema eventgridschema \
+    --source-resource-id "${TOPIC_ID}" \
+    --max-delivery-attempts 3 \
+    --event-ttl 3 \
+    --included-event-types new-job-event-3 \
+    --subject-begins-with new-job-oracle \
     --subject-case-sensitive true \
     --deadletter-endpoint ${DEAD_LETTER}
 

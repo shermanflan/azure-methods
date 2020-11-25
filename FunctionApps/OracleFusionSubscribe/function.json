@@ -1,6 +1,5 @@
 {
   "scriptFile": "__init__.py",
-  "disabled": false,
   "bindings": [
     {
       "type": "eventGridTrigger",
@@ -11,7 +10,7 @@
       "name": "outputBlob",
       "type": "blob",
       "direction": "out",
-      "path": "event-grid-subscribe/event-{DateTime}.json",
+      "path": "event-grid-subscribe/event3-{DateTime}.json",
       "connection": "AzureWebJobsStorage"
     }
   ]

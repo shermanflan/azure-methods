@@ -21,7 +21,7 @@
       "name": "outputBlob",
       "type": "blob",
       "direction": "out",
-      "path": "httptriggermeds/{rand-guid}",
+      "path": "http-trigger-meds/meds-{DateTime}.json",
       "connection": "AzureWebJobsStorage"
     }
   ]
