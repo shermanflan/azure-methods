@@ -64,20 +64,14 @@ def main(req: func.HttpRequest,
 
         payload = get_meds(name, limit)
 
-        response = func.HttpResponse(body=payload, 
-                                     status_code=200,
-                                     mimetype='application/json')
-        
         logging.info(f'Saving payload as blob: {payload}')
         outputBlob.set(json.dumps(json.loads(payload), indent=4))
 
-        return response
-    else:
-        func.HttpResponse(json.dumps({'Bad Request': 'Parameters missing.'}), 
-                          status_code=400,
-                          mimetype='application/json')
+        return func.HttpResponse(body=payload,
+                                 status_code=200,
+                                 mimetype='application/json')
 
 
-    return func.HttpResponse(json.dumps({'Not Implemented': 'Undefined operation.'}), 
-                             status_code=501,
-                             mimetype='application/json')
+    func.HttpResponse(json.dumps({'Bad Request': 'Parameters missing.'}), 
+                        status_code=400,
+                        mimetype='application/json')

@@ -1,9 +1,6 @@
-from datetime import datetime
-import json
 import logging
 import os
 from tempfile import TemporaryDirectory
-import uuid
 
 import azure.functions as func
 
@@ -19,38 +16,19 @@ erp_client = OracleFusionHook(
     soap_uri=os.environ['SOAP_URI'], 
     erp_uri=os.environ['ERP_URI'])
 
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
 
-def main(event: func.EventGridEvent,
-         outputBlob: func.Out[func.InputStream]):
-        
-    data = event.get_json()
-    logging.info(f"Type: {type(data)}, {data.get('file_name_prefix', None)}")
-
-    result = json.dumps({
-        'id': event.id,
-        'data': data,
-        'data_type': str(type(data)),
-        'topic': event.topic,
-        'subject': event.subject,
-        'event_type': event.event_type,
-    }, indent=4)
-
-    logging.info(f'Saving payload as blob: {result}')
-
-    outputBlob.set(result)
-
-    logging.info(f'Searching for content in Oracle')
-
-    file_name_prefix = data.get('file_name_prefix', 'MANIFEST_DATA_41')
-    lake_container = data.get('lake_container', 'event-grid-subscribe')
-    lake_path = data.get('lake_path', 'output')
+    file_name = req.params.get('file_name', 'MANIFEST_DATA_41')
+    lake_container = req.params.get('lake_container', 'event-grid-subscribe')
+    lake_path = req.params.get('lake_path', 'output')
 
     search_query = f"""
-    dOriginalName <starts> `{file_name_prefix}`
+    dOriginalName <starts> `{file_name}`
     <AND> dSecurityGroup <starts> `OBIAImport`
     """.strip()
 
-    logging.info(f"Searching files for '{file_name_prefix}'")
+    logging.info(f"Searching files for '{search_query}'")
 
     results_df = erp_client.get_search_results(search_query)
 
@@ -60,6 +38,7 @@ def main(event: func.EventGridEvent,
         raise Exception(f"No documents found")
 
     with TemporaryDirectory() as tmp_folder:
+    # tmp_folder = './jupyter/data'
 
         for r in results_df.itertuples(index=False):
             logging.info(f"Downloading {r.dOriginalName} to {tmp_folder}")
@@ -82,20 +61,17 @@ def main(event: func.EventGridEvent,
                     with ZipFile(tmp_path) as z:
                         for member in z.infolist():
                             data = z.open(name=member.filename)
-                            file_name = f"{uuid.uuid4()}-{member.filename}"
-
                             lake_client.upload_data(lake_container=lake_container,
                                                     lake_dir=lake_path,
-                                                    file_name=file_name,
+                                                    file_name=member.filename,
                                                     data=data)
                 else:
-                    file_name = f"{uuid.uuid4()}-{attach['href']}"
-                    
                     lake_client.upload_data(lake_container=lake_container,
                                             lake_dir=lake_path,
-                                            file_name=file_name,
+                                            file_name=attach['href'],
                                             data=attach['Contents'])
 
             logging.info(f"Downloaded {docs_df.shape[0]} documents")
 
-    logging.info('Python EventGrid trigger processed an event: {result}')
+
+    return func.HttpResponse(f"This HTTP triggered function executed successfully.")

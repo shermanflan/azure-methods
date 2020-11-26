@@ -88,7 +88,9 @@ class DataLakeHook(object):
         except ResourceNotFoundError as e:
             logging.error(f'Lake container does not exist: {lake_container}')
             raise
-
+        
+        # TODO: Iterative append
+        # https://github.com/Azure/azure-sdk-for-python/blob/master/sdk/storage/azure-storage-file-datalake/samples/datalake_samples_upload_download.py#L49
         fc = dc.create_file(file=file_name)
         fc.append_data(data, offset=0, length=len(data))
         fc.flush_data(len(data))

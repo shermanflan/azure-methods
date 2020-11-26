@@ -241,3 +241,15 @@ the `function.json` binding as follows.
 ```
 The blob can then be referenced as `func.InputStream` variable as shown in
 the [example](HttpTriggerMeds/__init__.py).
+
+### Oracle Fusion Event Grid Trigger
+This [function](OracleFusionSubscribe) is an Event Grid trigger tied to 
+a custom topic subscription. It leverages custom libraries for interacting 
+with Azure [data lake](utility/api/lake.py) and Oracle Fusion via 
+[SOAP](utility/api/soap.py).
+
+#### Features
+
+- Respond to custom publish events via Event Grid topics
+- Use Zeep to interact with Oracle Fusion SOAP services
+- Upload content to Azure data lake 

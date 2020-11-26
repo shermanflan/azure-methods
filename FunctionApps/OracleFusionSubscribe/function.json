@@ -10,7 +10,7 @@
       "name": "outputBlob",
       "type": "blob",
       "direction": "out",
-      "path": "event-grid-subscribe/event3-{DateTime}.json",
+      "path": "event-grid-subscribe/event3-{rand-guid}-{DateTime}.json",
       "connection": "AzureWebJobsStorage"
     }
   ]
