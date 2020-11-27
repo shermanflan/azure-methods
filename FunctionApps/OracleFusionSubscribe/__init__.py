@@ -1,9 +1,11 @@
 from datetime import datetime
+import io
 import json
 import logging
 import os
 from tempfile import TemporaryDirectory
 import uuid
+from zipfile import ZipFile
 
 import azure.functions as func
 
@@ -59,43 +61,37 @@ def main(event: func.EventGridEvent,
     else:
         raise Exception(f"No documents found")
 
-    with TemporaryDirectory() as tmp_folder:
+    for r in results_df.itertuples(index=False):
+        logging.info(f"Downloading {r.dOriginalName} to {lake_path}")
 
-        for r in results_df.itertuples(index=False):
-            logging.info(f"Downloading {r.dOriginalName} to {tmp_folder}")
+        docs_df, content = erp_client.get_content(r.dID)
 
-            docs_df, content = erp_client.get_content(r.dID)
+        for attach in content:
 
-            for attach in content:
-                tmp_path = os.path.join(tmp_folder, attach['href'])
+            logging.info(f"Uploading to lake")
 
-                content_type = docs_df.loc[
-                    docs_df.dOriginalName == attach['href'],
-                    'dFormat'].iloc[0]
+            content_type = docs_df.loc[
+                docs_df.dOriginalName == attach['href'],
+                'dFormat'].iloc[0]
 
-                logging.info(f"Uploading to lake")
+            if content_type == 'application/zip':
+                with ZipFile(io.BytesIO(attach['Contents'])) as z:  # ?
+                    for member in z.infolist():
+                        file_name = f"{uuid.uuid4()}-{member.filename}"
+                        data = z.open(name=member.filename)
 
-                if content_type == 'application/zip':
-                    with open(tmp_path, 'wb') as f:
-                        f.write(attach['Contents'])
+                        lake_client.upload_data(lake_container=lake_container,
+                                                lake_dir=lake_path,
+                                                file_name=file_name,
+                                                data=data.read())
+            else:
+                file_name = f"{uuid.uuid4()}-{attach['href']}"
+                
+                lake_client.upload_data(lake_container=lake_container,
+                                        lake_dir=lake_path,
+                                        file_name=file_name,
+                                        data=attach['Contents'])
 
-                    with ZipFile(tmp_path) as z:
-                        for member in z.infolist():
-                            data = z.open(name=member.filename)
-                            file_name = f"{uuid.uuid4()}-{member.filename}"
+        logging.info(f"Downloaded {docs_df.shape[0]} documents")
 
-                            lake_client.upload_data(lake_container=lake_container,
-                                                    lake_dir=lake_path,
-                                                    file_name=file_name,
-                                                    data=data)
-                else:
-                    file_name = f"{uuid.uuid4()}-{attach['href']}"
-                    
-                    lake_client.upload_data(lake_container=lake_container,
-                                            lake_dir=lake_path,
-                                            file_name=file_name,
-                                            data=attach['Contents'])
-
-            logging.info(f"Downloaded {docs_df.shape[0]} documents")
-
-    logging.info('Python EventGrid trigger processed an event: {result}')
+    logging.info(f'Python EventGrid trigger processed an event: {result}')
