@@ -54,7 +54,12 @@ def main(event: func.EventGridEvent,
 
     logging.info(f"Searching files for '{file_name_prefix}'")
 
-    results_df = erp_client.get_search_results(search_query)
+    try:
+        results_df = erp_client.get_search_results(search_query)
+    except Exception as e:
+        logging.info(e.msg)
+        logging.exception(e)
+        raise
 
     if results_df.shape[0] > 0:
         logging.info(f"Found {results_df.shape[0]} documents")
@@ -64,7 +69,12 @@ def main(event: func.EventGridEvent,
     for r in results_df.itertuples(index=False):
         logging.info(f"Downloading {r.dOriginalName} to {lake_path}")
 
-        docs_df, content = erp_client.get_content(r.dID)
+        try:
+            docs_df, content = erp_client.get_content(r.dID)
+        except Exception as e:
+            logging.info(e.msg)
+            logging.exception(e)
+            raise
 
         for attach in content:
 

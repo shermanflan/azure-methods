@@ -19,9 +19,8 @@
     }
   },
   "retry": {
-    "strategy": "exponentialBackoff",
+    "strategy": "fixedDelay",
     "maxRetryCount": 2,
-    "minimumInterval": "00:00:05",
-    "maximumInterval": "00:00:15"
+    "delayInterval": "00:00:15"
   }
 }

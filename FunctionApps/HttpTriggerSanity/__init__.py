@@ -1,6 +1,9 @@
 import logging
+import io
 import os
 from tempfile import TemporaryDirectory
+import uuid
+from zipfile import ZipFile
 
 import azure.functions as func
 
@@ -19,59 +22,64 @@ erp_client = OracleFusionHook(
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    file_name = req.params.get('file_name', 'MANIFEST_DATA_41')
+    file_name_prefix = req.params.get('file_name_prefix', 'MANIFEST_DATA_41')
     lake_container = req.params.get('lake_container', 'event-grid-subscribe')
     lake_path = req.params.get('lake_path', 'output')
 
     search_query = f"""
-    dOriginalName <starts> `{file_name}`
+    dOriginalName <starts> `{file_name_prefix}`
     <AND> dSecurityGroup <starts> `OBIAImport`
     """.strip()
 
-    logging.info(f"Searching files for '{search_query}'")
+    logging.info(f"Searching files for '{file_name_prefix}'")
 
-    results_df = erp_client.get_search_results(search_query)
+    try:
+        results_df = erp_client.get_search_results(search_query)
+    except Exception as e:
+        logging.info(e.msg)
+        logging.exception(e)
+        raise
 
     if results_df.shape[0] > 0:
         logging.info(f"Found {results_df.shape[0]} documents")
     else:
         raise Exception(f"No documents found")
 
-    with TemporaryDirectory() as tmp_folder:
-    # tmp_folder = './jupyter/data'
+    for r in results_df.itertuples(index=False):
+        logging.info(f"Downloading {r.dOriginalName} to {lake_path}")
 
-        for r in results_df.itertuples(index=False):
-            logging.info(f"Downloading {r.dOriginalName} to {tmp_folder}")
+        docs_df, content = erp_client.get_content(r.dID)
 
-            docs_df, content = erp_client.get_content(r.dID)
+        for attach in content:
 
-            for attach in content:
-                tmp_path = os.path.join(tmp_folder, attach['href'])
+            logging.info(f"Uploading to lake")
 
-                content_type = docs_df.loc[
-                    docs_df.dOriginalName == attach['href'],
-                    'dFormat'].iloc[0]
+            content_type = docs_df.loc[
+                docs_df.dOriginalName == attach['href'],
+                'dFormat'].iloc[0]
 
-                logging.info(f"Uploading to lake")
+            if content_type == 'application/zip':
+                with ZipFile(io.BytesIO(attach['Contents'])) as z:  # ?
+                    for member in z.infolist():
+                        file_name = f"{uuid.uuid4()}-{member.filename}"
+                        data = z.open(name=member.filename)
 
-                if content_type == 'application/zip':
-                    with open(tmp_path, 'wb') as f:
-                        f.write(attach['Contents'])
+                        lake_client.upload_data(lake_container=lake_container,
+                                                lake_dir=lake_path,
+                                                file_name=file_name,
+                                                data=data.read())
+            else:
+                file_name = f"{uuid.uuid4()}-{attach['href']}"
+                
+                lake_client.upload_data(lake_container=lake_container,
+                                        lake_dir=lake_path,
+                                        file_name=file_name,
+                                        data=attach['Contents'])
 
-                    with ZipFile(tmp_path) as z:
-                        for member in z.infolist():
-                            data = z.open(name=member.filename)
-                            lake_client.upload_data(lake_container=lake_container,
-                                                    lake_dir=lake_path,
-                                                    file_name=member.filename,
-                                                    data=data)
-                else:
-                    lake_client.upload_data(lake_container=lake_container,
-                                            lake_dir=lake_path,
-                                            file_name=attach['href'],
-                                            data=attach['Contents'])
+        logging.info(f"Downloaded {docs_df.shape[0]} documents")
 
-            logging.info(f"Downloaded {docs_df.shape[0]} documents")
+    logging.info(f'Python EventGrid trigger processed an event')
 
-
-    return func.HttpResponse(f"This HTTP triggered function executed successfully.")
+    return func.HttpResponse(body='Python EventGrid trigger processed an event',
+                             status_code=200,
+                             mimetype='application/json')
