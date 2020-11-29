@@ -1,5 +1,6 @@
 from datetime import date
 from os.path import join
+from uuid import uuid4
 
 from geonames import (
     LAKE_CONTAINER, LAKE_CENSUS_PATH, LAKE_GEONAMES_PATH,
@@ -36,14 +37,14 @@ def load_datasets(tmp_folder):
     logger.info('Saving locally in parquet format')
 
     states_path = join(tmp_folder
-                       , f"{CENSUS_STATE_NAME}_{date_stamp}.parquet")
+                       , f"{CENSUS_STATE_NAME}_{uuid4()}.parquet")
     logger.debug('Saving states', source=states_path)
 
     states.to_parquet(path=states_path, engine='fastparquet'
                       , compression='snappy', index=True)
 
     counties_path = join(tmp_folder
-                         , f"{CENSUS_COUNTY_NAME}_{date_stamp}.parquet")
+                         , f"{CENSUS_COUNTY_NAME}_{uuid4()}.parquet")
     logger.debug('Saving counties', source=counties_path)
 
     counties.to_parquet(path=counties_path, engine='fastparquet'
@@ -56,7 +57,7 @@ def load_datasets(tmp_folder):
     #                   , compression='snappy')
 
     zipcodes_path = join(tmp_folder
-                         , f"{GEONAMES_ZIPCODE_NAME}_{date_stamp}.parquet")
+                         , f"{GEONAMES_ZIPCODE_NAME}_{uuid4()}.parquet")
     logger.debug('Saving zipcodes', source=zipcodes_path)
 
     zipcodes.to_parquet(path=zipcodes_path, engine='fastparquet'

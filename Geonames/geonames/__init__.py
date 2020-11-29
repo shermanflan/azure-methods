@@ -5,6 +5,9 @@ APP_INSIGHTS_KEY = environ.get('APP_INSIGHTS_KEY', '')
 APP_LOG_KEY = environ.get('APP_LOG_KEY', 'bhs.aci.geonames2lake.dev')
 LOG_LEVEL = environ.get('LOG_LEVEL', 'DEBUG')
 
+ON_QUEUE = True if (environ.get('ON_QUEUE', 'False')) == 'True' else False
+QUEUE_NAME = environ.get('QUEUE_NAME', 'geonames-tasks')
+
 CENSUS_STATES_URI = environ.get('CENSUS_STATES_URI'
                                 , 'https://www2.census.gov/programs-surveys/popest/geographies/2019/state-geocodes-v2019.xlsx')
 CENSUS_COUNTIES_URI = environ.get('CENSUS_COUNTIES_URI'
@@ -18,8 +21,9 @@ CENSUS_COUNTY_NAME = environ.get('CENSUS_COUNTY_NAME', 'MasterData.CountyProvinc
 GEONAMES_PLACE_NAME = environ.get('GEONAMES_PLACE_NAME', 'MasterData.GeoPlace')
 GEONAMES_ZIPCODE_NAME = environ.get('GEONAMES_ZIPCODE_NAME', 'MasterData.ZipCode')
 
-_STORE_ACCOUNT = environ.get('LAKE_ACCOUNT_NAME', 'pahintegrationstorage')
+_STORE_ACCOUNT = environ.get('LAKE_ACCOUNT_NAME', 'airflowstoragesandbox')
 STORE_KEY = environ.get('LAKE_ACCOUNT_KEY', '')
+STORE_CONNECTION = environ.get('STORE_CONNECTION_STRING', '')
 
 LAKE_URL = f'https://{_STORE_ACCOUNT}.dfs.core.windows.net'
 LAKE_CONTAINER = environ.get('LAKE_CONTAINER_NAME', 'enterprisedata')

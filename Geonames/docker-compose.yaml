@@ -25,6 +25,8 @@ services:
     environment:
         - APP_LOG_KEY=bhs.aci.geonames2lake.dev
         - LOG_LEVEL=DEBUG
+        - ON_QUEUE=False
+        - QUEUE_NAME=geonames-tasks
         - CENSUS_STATES_URI=https://www2.census.gov/programs-surveys/popest/geographies/2019/state-geocodes-v2019.xlsx
         - CENSUS_COUNTIES_URI=https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2019_Gazetteer/2019_Gaz_counties_national.zip
         - GEONAMES_PLACES_URI=https://download.geonames.org/export/dump/US.zip

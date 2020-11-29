@@ -21,6 +21,9 @@ indexing
 to save data sets in parquet format
 - Uses [`azure-storage-file-datalake`](https://pypi.org/project/azure-storage-file-datalake) 
 to write files to Azure data lake
+- Uses [`azure-storage-queue`](https://pypi.org/project/azure-storage-queue/)
+to read/write messages to Azure queue as a demonstration of the work
+queue pattern
 - Uses the [tenacity](https://tenacity.readthedocs.io/en/latest/) 
 library for exponential retry of web requests
 - Includes [scripts and configuration](aci/) to deploy to Azure Container
