@@ -53,9 +53,9 @@ root_logger.addHandler(console)
 # root_logger.addHandler(az_handler)
 
 # Quiet chatty libs
-# logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)
-# logging.getLogger('numba.core').setLevel(logging.ERROR)
-# logging.getLogger('urllib3').setLevel(logging.ERROR)
+logging.getLogger('azure.core.pipeline.policies').setLevel(logging.ERROR)
+logging.getLogger('numba.core').setLevel(logging.ERROR)
+logging.getLogger('urllib3').setLevel(logging.ERROR)
 # logging.getLogger('msal').setLevel(logging.ERROR)
 
 

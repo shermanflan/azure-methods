@@ -37,14 +37,14 @@ def load_datasets(tmp_folder):
     logger.info('Saving locally in parquet format')
 
     states_path = join(tmp_folder
-                       , f"{CENSUS_STATE_NAME}_{uuid4()}.parquet")
+                       , f"{CENSUS_STATE_NAME}_{date_stamp}.parquet")
     logger.debug('Saving states', source=states_path)
 
     states.to_parquet(path=states_path, engine='fastparquet'
                       , compression='snappy', index=True)
 
     counties_path = join(tmp_folder
-                         , f"{CENSUS_COUNTY_NAME}_{uuid4()}.parquet")
+                         , f"{CENSUS_COUNTY_NAME}_{date_stamp}.parquet")
     logger.debug('Saving counties', source=counties_path)
 
     counties.to_parquet(path=counties_path, engine='fastparquet'
