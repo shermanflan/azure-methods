@@ -28,7 +28,7 @@ if __name__ == '__main__':
             # )
 
             message = client.get_connection().receive_message(
-                visibility_timeout=60, timeout=15
+                visibility_timeout=5, timeout=15
             )
             if message:
                 content = {
