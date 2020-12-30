@@ -18,6 +18,12 @@ DROP TABLE IF EXISTS [Staging].[AhaProject];
 DROP TABLE IF EXISTS [Staging].[AhaIdea];
 DROP TABLE IF EXISTS [Staging].[AhaUser];
 DROP TABLE IF EXISTS [Staging].[AhaRelease];
+DROP TABLE IF EXISTS [Staging].[AhaFeature];
+DROP TABLE IF EXISTS [Staging].[AhaRequirement];
+DROP TABLE IF EXISTS [Staging].[AhaIntegrationField];
+DROP TABLE IF EXISTS [Staging].[AhaEpic];
+DROP TABLE IF EXISTS [Staging].[AhaInitiative];
+DROP TABLE IF EXISTS [Staging].[AhaEpoch];
 GO
 
 IF EXISTS (
@@ -144,5 +150,143 @@ CREATE TABLE [Staging].[AhaRelease]
     , project_id                                VARCHAR(128)            NOT NULL
     , workflow_status_id                        VARCHAR(128)            NOT NULL
     , owner_id                                  VARCHAR(128)            NOT NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaFeature]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , reference_num                             NVARCHAR(64)            NOT NULL
+    , position                                  INT                     NOT NULL
+    , name                                      NVARCHAR(512)           NOT NULL
+    , score                                     INT                     NOT NULL
+    , last_requirement_num                      INT                     NOT NULL
+    , progress                                  FLOAT                   NULL
+    , progress_source                           NVARCHAR(128)           NULL
+    , show_feature_remaining_estimate           BIT                     NOT NULL
+    , due_date                                  DATE                    NULL
+    , start_date                                DATE                    NULL
+    , duration_estimate                         FLOAT                   NULL
+    , original_estimate                         FLOAT                   NULL
+    , remaining_estimate                        FLOAT                   NULL
+    , work_done                                 FLOAT                   NULL
+    , status_changed_on                         DATE                    NULL
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , epic_id                                   VARCHAR(128)            NULL
+    , project_id                                VARCHAR(128)            NOT NULL
+    , release_id                                VARCHAR(128)            NOT NULL
+    , initiative_id                             VARCHAR(128)            NULL
+    , assigned_to_user_id                       VARCHAR(128)            NULL
+    , created_by_user_id                        VARCHAR(128)            NOT NULL
+    , workflow_status_id                        VARCHAR(128)            NOT NULL
+    , workflow_kind_id                          VARCHAR(128)            NOT NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaRequirement]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , reference_num                             NVARCHAR(64)            NOT NULL
+    , created_by_user_id                        VARCHAR(128)            NOT NULL
+    , position                                  INT                     NOT NULL
+    , original_estimate                         FLOAT                   NULL
+    , remaining_estimate                        FLOAT                   NULL
+    , work_done                                 FLOAT                   NULL
+    , name                                      NVARCHAR(512)           NOT NULL    
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , feature_id                                VARCHAR(128)            NOT NULL
+    , project_id                                VARCHAR(128)            NOT NULL
+    , workflow_status_id                        VARCHAR(128)            NOT NULL
+    , assigned_to_user_id                       VARCHAR(128)            NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaIntegrationField]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , name                                      NVARCHAR(512)           NOT NULL    
+    , value                                     NVARCHAR(512)           NOT NULL
+    , integratable_type                         NVARCHAR(128)           NOT NULL
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , account_id                                VARCHAR(128)            NOT NULL
+    , integration_id                            VARCHAR(128)            NOT NULL
+    , integratable_id                           VARCHAR(128)            NOT NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaEpic]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , reference_num                             NVARCHAR(64)            NOT NULL
+    , position                                  INT                     NOT NULL
+    , name                                      NVARCHAR(512)           NOT NULL
+    , score                                     INT                     NULL
+    , progress                                  FLOAT                   NULL
+    , progress_source                           NVARCHAR(128)           NULL
+    , show_feature_remaining_estimate           BIT                     NOT NULL
+    , due_date                                  DATE                    NULL
+    , start_date                                DATE                    NULL
+    , duration_estimate                         FLOAT                   NULL
+    , original_estimate                         FLOAT                   NULL
+    , remaining_estimate                        FLOAT                   NULL
+    , work_done                                 FLOAT                   NULL
+    , status_changed_on                         DATE                    NULL
+    , duration_source                           NVARCHAR(128)           NULL
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , release_id                                VARCHAR(128)            NOT NULL
+    , project_id                                VARCHAR(128)            NOT NULL
+    , initiative_id                             VARCHAR(128)            NULL
+    , created_by_user_id                        VARCHAR(128)            NOT NULL
+    , workflow_status_id                        VARCHAR(128)            NOT NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaInitiative]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , reference_num                             NVARCHAR(64)            NOT NULL
+    , name                                      NVARCHAR(512)           NOT NULL
+    , color                                     INT                     NULL
+    , position                                  INT                     NOT NULL
+    , value                                     INT                     NOT NULL
+    , effort                                    INT                     NOT NULL
+    , presented                                 BIT                     NOT NULL
+    , start_date                                DATE                    NULL
+    , end_date                                  DATE                    NULL
+    , progress                                  FLOAT                   NULL
+    , progress_source                           NVARCHAR(128)           NULL
+    , duration_source                           NVARCHAR(128)           NULL
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , project_id                                VARCHAR(128)            NOT NULL
+    , epoch_id                                  VARCHAR(128)            NULL
+    , workflow_status_id                        VARCHAR(128)            NOT NULL
+);
+GO
+
+CREATE TABLE [Staging].[AhaEpoch]
+(
+    Id                                          INT IDENTITY(1, 1)      NOT NULL
+        PRIMARY KEY
+    , aha_id                                    VARCHAR(128)            NOT NULL
+    , name                                      NVARCHAR(512)           NOT NULL
+    , archived                                  BIT                     NOT NULL
+    , created_at                                DATETIME2(2)            NOT NULL
+    , updated_at                                DATETIME2(2)            NOT NULL
+    , account_id                                VARCHAR(128)            NOT NULL
 );
 GO

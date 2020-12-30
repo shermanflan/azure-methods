@@ -174,6 +174,144 @@ INSERT INTO [Staging].[AhaRelease]
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
 
+feature_dml = """
+INSERT INTO [Staging].[AhaFeature]
+(
+    [aha_id]
+    ,[reference_num]
+    ,[position]
+    ,[name]
+    ,[score]
+    ,[last_requirement_num]
+    ,[progress]
+    ,[progress_source]
+    ,[show_feature_remaining_estimate]
+    ,[due_date]
+    ,[start_date]
+    ,[duration_estimate]
+    ,[original_estimate]
+    ,[remaining_estimate]
+    ,[work_done]
+    ,[status_changed_on]
+    ,[created_at]
+    ,[updated_at]
+    ,[epic_id]
+    ,[project_id]
+    ,[release_id]
+    ,[initiative_id]
+    ,[assigned_to_user_id]
+    ,[created_by_user_id]
+    ,[workflow_status_id]
+    ,[workflow_kind_id]
+) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+requirement_dml = """
+INSERT INTO [Staging].[AhaRequirement]
+(
+    [aha_id]
+    ,[reference_num]
+    ,[created_by_user_id]
+    ,[position]
+    ,[original_estimate]
+    ,[remaining_estimate]
+    ,[work_done]
+    ,[name]
+    ,[created_at]
+    ,[updated_at]
+    ,[feature_id]
+    ,[project_id]
+    ,[workflow_status_id]
+    ,[assigned_to_user_id]
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+integration_field_dml = """
+INSERT INTO [Staging].[AhaIntegrationField]
+(
+    [aha_id]
+    ,[name]
+    ,[value]
+    ,[integratable_type]
+    ,[created_at]
+    ,[updated_at]
+    ,[account_id]
+    ,[integration_id]
+    ,[integratable_id]
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+epic_dml = """
+INSERT INTO [Staging].[AhaEpic]
+(
+    [aha_id]
+    ,[reference_num]
+    ,[position]
+    ,[name]
+    ,[score]
+    ,[progress]
+    ,[progress_source]
+    ,[show_feature_remaining_estimate]
+    ,[due_date]
+    ,[start_date]
+    ,[duration_estimate]
+    ,[original_estimate]
+    ,[remaining_estimate]
+    ,[work_done]
+    ,[status_changed_on]
+    ,[duration_source]
+    ,[created_at]
+    ,[updated_at]
+    ,[release_id]
+    ,[project_id]
+    ,[initiative_id]
+    ,[created_by_user_id]
+    ,[workflow_status_id]
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+initiative_dml = """
+INSERT INTO [Staging].[AhaInitiative]
+(
+    [aha_id]
+    ,[reference_num]
+    ,[name]
+    ,[color]
+    ,[position]
+    ,[value]
+    ,[effort]
+    ,[presented]
+    ,[start_date]
+    ,[end_date]
+    ,[progress]
+    ,[progress_source]
+    ,[duration_source]
+    ,[created_at]
+    ,[updated_at]
+    ,[project_id]
+    ,[epoch_id]
+    ,[workflow_status_id]
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+epoch_dml = """
+INSERT INTO [Staging].[AhaEpoch]
+(
+    [aha_id]
+    ,[name]
+    ,[archived]
+    ,[created_at]
+    ,[updated_at]
+    ,[account_id]
+)
+VALUES (?, ?, ?, ?, ?, ?);
+"""
+
 if __name__ == '__main__':
 
     # TODO: Request backup
@@ -390,11 +528,127 @@ if __name__ == '__main__':
                         record['links']['owner_id'],
                     ))
                 elif record['class'] == 'Feature':
-                    pass
+                    db.write_record(feature_dml, (
+                        record['id'],
+                        record['fields']['reference_num'],
+                        record['fields']['position'],
+                        record['fields']['name'],
+                        record['fields']['score'],
+                        record['fields']['last_requirement_num'],
+                        record['fields']['progress'],
+                        record['fields']['progress_source'],
+                        record['fields']['show_feature_remaining_estimate'],
+                        datetime.strptime(record['fields']['due_date'], "%Y-%m-%d")
+                            if record['fields']['due_date'] else None,
+                        datetime.strptime(record['fields']['start_date'], "%Y-%m-%d")
+                            if record['fields']['start_date'] else None,
+                        record['fields']['duration_estimate'],
+                        record['fields']['original_estimate'],
+                        record['fields']['remaining_estimate'],
+                        record['fields']['work_done'],
+                        datetime.strptime(record['fields']['status_changed_on'], "%Y-%m-%d")
+                            if record['fields']['status_changed_on'] else None,
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links'].get('epic_id'),
+                        record['links']['project_id'],
+                        record['links']['release_id'],
+                        record['links'].get('initiative_id'),
+                        record['links'].get('assigned_to_user_id'),
+                        record['links']['created_by_user_id'],
+                        record['links']['workflow_status_id'],
+                        record['links']['workflow_kind_id'],
+                    ))
                 elif record['class'] == 'Requirement':
-                    pass
+                    db.write_record(requirement_dml, (
+                        record['id'],
+                        record['fields']['reference_num'],
+                        record['fields']['created_by_user_id'],
+                        record['fields']['position'],
+                        record['fields']['original_estimate'],
+                        record['fields']['remaining_estimate'],
+                        record['fields']['work_done'],
+                        record['fields']['name'],
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links']['feature_id'],
+                        record['links']['project_id'],
+                        record['links']['workflow_status_id'],
+                        record['links'].get('assigned_to_user_id'),
+                    ))
                 elif record['class'] == 'IntegrationField':
-                    pass
+                    db.write_record(integration_field_dml, (
+                        record['id'],
+                        record['fields']['name'],
+                        record['fields']['value'],
+                        record['fields']['integratable_type'],
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links']['account_id'],
+                        record['links']['integration_id'],
+                        record['links']['integratable_id'],
+                    ))
+                elif record['class'] == 'Epic':
+                    db.write_record(epic_dml, (
+                        record['id'],
+                        record['fields']['reference_num'],
+                        record['fields']['position'],
+                        record['fields']['name'],
+                        record['fields']['score'],
+                        record['fields']['progress'],
+                        record['fields']['progress_source'],
+                        record['fields']['show_feature_remaining_estimate'],
+                        datetime.strptime(record['fields']['due_date'], "%Y-%m-%d")
+                            if record['fields']['due_date'] else None,
+                        datetime.strptime(record['fields']['start_date'], "%Y-%m-%d")
+                            if record['fields']['start_date'] else None,
+                        record['fields']['duration_estimate'],
+                        record['fields']['original_estimate'],
+                        record['fields']['remaining_estimate'],
+                        record['fields']['work_done'],
+                        datetime.strptime(record['fields']['status_changed_on'], "%Y-%m-%d")
+                            if record['fields']['status_changed_on'] else None,
+                        record['fields']['duration_source'],
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links']['release_id'],
+                        record['links']['project_id'],
+                        record['links'].get('initiative_id'),
+                        record['links']['created_by_user_id'],
+                        record['links']['workflow_status_id'],
+                    ))
+                elif record['class'] == 'Initiative':
+                    db.write_record(initiative_dml, (
+                        record['id'],
+                        record['fields']['reference_num'],
+                        record['fields']['name'],
+                        record['fields']['color'],
+                        record['fields']['position'],
+                        record['fields']['value'],
+                        record['fields']['effort'],
+                        record['fields']['presented'],
+                        datetime.strptime(record['fields']['start_date'], "%Y-%m-%d")
+                            if record['fields']['start_date'] else None,
+                        datetime.strptime(record['fields']['end_date'], "%Y-%m-%d")
+                            if record['fields']['end_date'] else None,
+                        record['fields']['progress'],
+                        record['fields']['progress_source'],
+                        record['fields']['duration_source'],
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links']['project_id'],
+                        record['links'].get('epoch_id'),
+                        record['links']['workflow_status_id'],
+                    ))
+                elif record['class'] == 'Epoch':
+                    db.write_record(epoch_dml, (
+                        record['id'],
+                        record['fields']['name'],
+                        record['fields']['archived'],
+                        datetime.strptime(record['fields']['created_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        datetime.strptime(record['fields']['updated_at'], "%Y-%m-%d %H:%M:%S %Z"),
+                        record['links']['account_id'],
+                    ))
 
             db.batch_commit()
 
