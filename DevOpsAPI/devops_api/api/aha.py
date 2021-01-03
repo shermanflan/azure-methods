@@ -8,15 +8,18 @@ from devops_api import (
 )
 from devops_api.utils import log
 from devops_api.utils.error import RetryableError
+from devops_api.utils.shell import run_cmd
 
 logger = logging.getLogger(__name__)
 
 
-def get_account_backup(backup_id):
+def get_account_backup(backup_id, out_directory):
     """
 
     :param backup_id:
     :type backup_id: String
+    :param out_directory:
+    :type out_directory: String
     :return: path to account_backup as String
     """
     with requests.Session() as session:
@@ -32,14 +35,20 @@ def get_account_backup(backup_id):
             r = session.get(backup_uri, headers=headers, stream=True)
             r.raise_for_status()
 
-            save_path = f"./data/{backup_id}.tgz"
+            save_path = f"{out_directory}/{backup_id}.tgz"
 
             with open(save_path, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=512):
                     fd.write(chunk)
 
-            # TODO: unzip => tar -xf 6911382328887923514.tgz
-            return save_path
+            cmd = [
+                'tar', '--extract',
+                '-vf', save_path,
+                f"--one-top-level={out_directory}"
+            ]
+            extract_filename = run_cmd(cmd).stdout.rstrip()
+
+            return f"{out_directory}/{extract_filename}"
         except HTTPError as e:
 
             # logger.error(f'Request error', status_code=r.status_code, source=backup_uri)

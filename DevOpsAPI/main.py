@@ -11,10 +11,15 @@ import requests
 from requests.exceptions import HTTPError
 
 from devops_api import (
-    AHA_ENDPOINT, AHA_APP_KEY,
+    LAKE_CONTAINER, LAKE_PATH,
+    BLOB_ACCOUNT, BLOB_ACCOUNT_KEY,
+    BLOB_CONTAINER, BLOB_PATH,
     SQL_DRIVER, SQL_HOST, SQL_DB,
     SQL_USER, SQL_PWD
 )
+from devops_api.api.aha import get_account_backup
+from devops_api.api.blob import AzureBlobHook
+from devops_api.api.lake import LakeFactory
 from devops_api.db.mssql import SqlWriter
 from devops_api.utils import log
 from devops_api.utils.error import RetryableError
@@ -102,8 +107,9 @@ if __name__ == '__main__':
     # TODO: Request backup
     # TODO: Handle HTTP 429 if a backup was already created within the last 24 hours
     # TODO: Poller every 5 min
-
-    # backup_path = get_account_backup(backup_id="6911382328887923514")
+    # tmp_dir = '/home/condesa1931/personal/github/azure-methods/DevOpsAPI/data'
+    # backup_path = get_account_backup(backup_id="6911382328887923514",
+    #                                  out_directory=tmp_dir)
     backup_path = f"./data/aha-account-6240998105453674102-backup-2020-12-28-18-53.json"
     project_path = f"./data/aha-project-backup-2020-12-28-18-53.parquet"
     idea_path = f"./data/aha-idea-backup-2020-12-28-18-53.parquet"
@@ -459,8 +465,22 @@ if __name__ == '__main__':
             tmp_df = pd.DataFrame(requirement, columns=[x.name for x in REQUIREMENT_PQ])
             r.write_table(pa.Table.from_pandas(tmp_df, schema=REQUIREMENT_PQ))
 
-        sorted_classes = sorted(classes.items(), key=lambda x: x[1], reverse=True)
-        logger.info(f"{json.dumps(sorted_classes, indent=4)}")
-        logger.info(f"Found {len(sorted_classes)} classes")
+    logger.info(f"Writing to data lake")
+
+    files = [
+        f"./data/aha-project-backup-2020-12-28-18-53.parquet",
+        f"./data/aha-idea-backup-2020-12-28-18-53.parquet",
+        f"./data/aha-requirement-backup-2020-12-28-18-53.parquet"
+    ]
+    # blob_hook = AzureBlobHook(account_name=BLOB_ACCOUNT,
+    #                          account_key=BLOB_ACCOUNT_KEY)
+    # blob_hook.upload_files(container_name=BLOB_CONTAINER,
+    #                        blob_dir=BLOB_PATH, files=files)
+    LakeFactory().upload_files(lake_container=LAKE_CONTAINER,
+                               lake_dir=LAKE_PATH, files=files)
+
+    sorted_classes = sorted(classes.items(), key=lambda x: x[1], reverse=True)
+    # logger.info(f"{json.dumps(sorted_classes, indent=4)}")
+    logger.info(f"Found {len(sorted_classes)} classes")
 
     logger.info("Process complete")
