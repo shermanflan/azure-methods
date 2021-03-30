@@ -6,7 +6,7 @@ numpy
 opencensus-ext-azure==1.0.5
 openpyxl==3.0.5
 pandas
-Pygments==2.6.1
+Pygments==2.7.4
 python-snappy==0.5.4
 #pyodbc
 #pytest
